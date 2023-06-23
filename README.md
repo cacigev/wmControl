@@ -16,7 +16,7 @@ WM HighFinesse WS8 control via ethernet
 * In module control wavemeters are initialized with their version-number. When the user wants to measure_something a object of thread.callback is initialized.
    * version number....
    * Setters of the wavemeter are not threaded.
-* At initialisation of thread.callback the version attribute of callback is set. This used to get something from a specific wavemeter.
+* At initialisation of thread.callback the version attribute of callback is set. This used to do_something() from a specific wavemeter.
 
 # Stephan-plain (client-side)
 * There is (will be) a secondary server implemented, wich handels the requests of user PC.
