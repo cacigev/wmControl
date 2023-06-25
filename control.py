@@ -45,9 +45,7 @@ class wavemeter:
         time.sleep(measure_time)
         # print(self.bfr)
 
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-        )  # remove thread
+        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
         print("Done")
 
     def frequencys(self, measure_time):
@@ -63,9 +61,7 @@ class wavemeter:
         time.sleep(measure_time)
         # print(self.bfr)
 
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-        )  # remove thread
+        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
         print("Done")
 
     def allwavelengths(self, measure_time):
@@ -81,9 +77,7 @@ class wavemeter:
         time.sleep(measure_time)
         # print(self.bfr)
 
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-        )  # remove thread
+        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
         print("Done")
 
     def getSwitcher(self, measure_time):
@@ -106,9 +100,7 @@ class wavemeter:
             time.sleep(measure_time)
             # print(self.bfr)
 
-            wlmData.dll.Instantiate(
-                wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-            )  # remove thread
+            wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
             print("Done")
 
     def putBfr(self, itm):
@@ -134,7 +126,4 @@ class wavemeter:
         try:
             wlmData.LoadDLL(self.DLL_PATH)
         except:
-            sys.exit(
-                "Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!"
-                % DLL_PATH
-            )
+            sys.exit("Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!" % DLL_PATH)

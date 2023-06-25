@@ -9,9 +9,7 @@ class callback:
 
     # Prints all measured frequencies of one WM
     # Unit: THz
-    def frequencysProcEx(
-        self, ver: int, mode: int, int_val: int, double_val: float, result: int
-    ):
+    def frequencysProcEx(self, ver: int, mode: int, int_val: int, double_val: float, result: int):
         const_to_channel = {
             wlmConst.cmiWavelength1: 1,
             wlmConst.cmiWavelength2: 2,
@@ -30,9 +28,7 @@ class callback:
 
     # Prints all measured wavelengths one WM
     # Unit: nm
-    def wavelengthsProcEx(
-        self, ver: int, mode: int, int_val: int, double_val: float, result: int
-    ):
+    def wavelengthsProcEx(self, ver: int, mode: int, int_val: int, double_val: float, result: int):
         const_to_channel = {
             wlmConst.cmiWavelength1: 1,
             wlmConst.cmiWavelength2: 2,
@@ -45,9 +41,7 @@ class callback:
         }
 
         if (ver == self.version) and (mode in const_to_channel):
-            print(
-                f"Time:{int_val}, WM:{ver}, Channel:{const_to_channel[mode]}, Wavelength:{double_val:.8f}"
-            )
+            print(f"Time:{int_val}, WM:{ver}, Channel:{const_to_channel[mode]}, Wavelength:{double_val:.8f}")
 
     # Prints all measured wavelengths of all WMs connected to the control-PC
     # Unit: nm
