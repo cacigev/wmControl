@@ -104,6 +104,9 @@ class wavemeter:
             print("Done")
 
     def putBfr(self, itm):
+        # FIXME: Not thread-safe, but called from threads!
+        # For Asyncio check out Janus: https://github.com/aio-libs/janus
+        # else use queue: https://docs.python.org/3/library/queue.html
         if self.bfr_pntr == self.bfr_length:
             self.bfr[0] = itm
             self.bfr_pntr = 1
