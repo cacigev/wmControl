@@ -9,7 +9,7 @@ import numpy as np
 from wmControl import thread
 
 
-class wavemeter:
+class Wavemeter:
     # Set attributes: DLL path, version and callbacktype
     DLL_PATH = "./wmControl/wlmData.dll"
     version = 0  # Version of the WM. Works like a serialnumber just not named like it. 0 should call the first activated WM, but dont rely on that.

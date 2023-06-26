@@ -3,7 +3,7 @@ from wmControl import control
 from wmControl import wlmData
 
 
-class callback:
+class Callback:
     version = 0
     put = None
 
