@@ -116,7 +116,7 @@ class Wavemeter:
         self.bfr_pntr += 1
         print(self.bfr, self.bfr_pntr)
 
-    def __init__(self, ver, length=5, dll=".Wavemeter/wmControl/wlmData.dll"):
+    def __init__(self, ver, length=5, dll="./wmControl/wlmData.dll"):
         # Set attributes
         self.DLL_PATH = dll
         self.version = ver
