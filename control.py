@@ -1,6 +1,6 @@
 # wlmData.dll related imports
-import wmControl.wlmData as wlmData
-import wmControl.wlmConst as wlmConst
+from wmControl import wlmData
+from wmControl import wlmConst
 import ctypes, time
 
 # others
