@@ -52,6 +52,7 @@ ResERR_NotInSwitchMode = -24
 ResERR_OnlyInSwitchMode = -25
 ResERR_TCPErr = -26
 
+
 class MeasureMode(IntEnum):
     # Mode Constants for Callback-Export and WaitForWLMEvent-function
     cmiResultMode = 1
@@ -279,7 +280,7 @@ class MeasureMode(IntEnum):
     cmiAveragingCount = 1524
     cmiAveragingMode = 1525
     cmiAveragingType = 1526
-    cmiNowTick_d  = 1527
+    cmiNowTick_d = 1527
     cmiAirMode = 1532
     cmiAirTemperature = 1534
     cmiAirPressure = 1535
@@ -391,6 +392,7 @@ class MeasureMode(IntEnum):
     cmiMultimodeCount16 = 1648
     cmiMultimodeCount17 = 1649
 
+
 # Index constants for Get- and SetExtraSetting
 cesCalculateLive = 4501
 
@@ -400,10 +402,10 @@ cCtrlWLMHide = 2
 cCtrlWLMExit = 3
 cCtrlWLMStore = 4
 cCtrlWLMCompare = 5
-cCtrlWLMWait        = 0x0010
+cCtrlWLMWait = 0x0010
 cCtrlWLMStartSilent = 0x0020
-cCtrlWLMSilent      = 0x0040
-cCtrlWLMStartDelay  = 0x0080
+cCtrlWLMSilent = 0x0040
+cCtrlWLMStartDelay = 0x0080
 
 # Operation Mode Constants (for "Operation" and "GetOperationState" functions)
 cStop = 0
@@ -417,13 +419,13 @@ cCtrlStartAdjustment = cAdjustment
 cCtrlStartMeasurement = cMeasurement
 cCtrlStartRecord = 0x0004
 cCtrlStartReplay = 0x0008
-cCtrlStoreArray  = 0x0010
-cCtrlLoadArray   = 0x0020
+cCtrlStoreArray = 0x0010
+cCtrlLoadArray = 0x0020
 
 # Additional Operation Flag Constants (combine with "Base Operation Constants" above.)
 cCtrlDontOverwrite = 0x0000
 
-cCtrlFileGiven     = 0x0000
+cCtrlFileGiven = 0x0000
 
 
 # Measurement Control Mode Constants
@@ -575,18 +577,18 @@ ErrTempWlmMissing = ErrTemperature + ErrWlmMissing
 
 # Return errorvalues of GetGain
 ErrGain = -1000
-ErrGainNotAvailable        = ErrGain + ErrNotAvailable
-ErrGainWlmMissing          = ErrGain + ErrWlmMissing
+ErrGainNotAvailable = ErrGain + ErrNotAvailable
+ErrGainWlmMissing = ErrGain + ErrWlmMissing
 ErrGainChannelNotAvailable = ErrGain + ErrChannelNotAvailable
-ErrGainOutOfRange          = ErrGain + ErrOutOfRange
+ErrGainOutOfRange = ErrGain + ErrOutOfRange
 ErrGainParameterOutOfRange = ErrGain + ErrParameterOutOfRange
 
 # Return errorvalues of GetMultimodeInfo
 ErrMMI = -1000
-ErrMMINotAvailable        = ErrMMI + ErrNotAvailable
-ErrMMIWlmMissing          = ErrMMI + ErrWlmMissing
+ErrMMINotAvailable = ErrMMI + ErrNotAvailable
+ErrMMIWlmMissing = ErrMMI + ErrWlmMissing
 ErrMMIChannelNotAvailable = ErrMMI + ErrChannelNotAvailable
-ErrMMIOutOfRange          = ErrMMI + ErrOutOfRange
+ErrMMIOutOfRange = ErrMMI + ErrOutOfRange
 ErrMMIParameterOutOfRange = ErrMMI + ErrParameterOutOfRange
 
 # Return errorvalues of GetDistance
@@ -596,38 +598,36 @@ ErrDistanceNotAvailable = ErrDistance + ErrNotAvailable
 ErrDistanceWlmMissing = ErrDistance + ErrWlmMissing
 
 # Return flags of ControlWLMEx in combination with Show or Hide, Wait and Res = 1
-flServerStarted           = 0x00000001
-flErrDeviceNotFound       = 0x00000002
-flErrDriverError          = 0x00000004
-flErrUSBError             = 0x00000008
-flErrUnknownDeviceError   = 0x00000010
-flErrWrongSN              = 0x00000020
-flErrUnknownSN            = 0x00000040
-flErrTemperatureError     = 0x00000080
-flErrPressureError        = 0x00000100
-flErrCancelledManually    = 0x00000200
-flErrWLMBusy              = 0x00000400
-flErrUnknownError         = 0x00001000
+flServerStarted = 0x00000001
+flErrDeviceNotFound = 0x00000002
+flErrDriverError = 0x00000004
+flErrUSBError = 0x00000008
+flErrUnknownDeviceError = 0x00000010
+flErrWrongSN = 0x00000020
+flErrUnknownSN = 0x00000040
+flErrTemperatureError = 0x00000080
+flErrPressureError = 0x00000100
+flErrCancelledManually = 0x00000200
+flErrWLMBusy = 0x00000400
+flErrUnknownError = 0x00001000
 flNoInstalledVersionFound = 0x00002000
-flDesiredVersionNotFound  = 0x00004000
-flErrFileNotFound         = 0x00008000
-flErrParmOutOfRange       = 0x00010000
-flErrCouldNotSet          = 0x00020000
-flErrEEPROMFailed         = 0x00040000
-flErrFileFailed           = 0x00080000
-flDeviceDataNewer         = 0x00100000
-flFileDataNewer           = 0x00200000
-flErrDeviceVersionOld     = 0x00400000
-flErrFileVersionOld       = 0x00800000
-flDeviceStampNewer        = 0x01000000
-flFileStampNewer          = 0x02000000
+flDesiredVersionNotFound = 0x00004000
+flErrFileNotFound = 0x00008000
+flErrParmOutOfRange = 0x00010000
+flErrCouldNotSet = 0x00020000
+flErrEEPROMFailed = 0x00040000
+flErrFileFailed = 0x00080000
+flDeviceDataNewer = 0x00100000
+flFileDataNewer = 0x00200000
+flErrDeviceVersionOld = 0x00400000
+flErrFileVersionOld = 0x00800000
+flDeviceStampNewer = 0x01000000
+flFileStampNewer = 0x02000000
 
 # Return file info flags of SetOperationFile
 flFileInfoDoesntExist = 0x0000
-flFileInfoExists      = 0x0001
-flFileInfoCantWrite   = 0x0002
-flFileInfoCantRead    = 0x0004
+flFileInfoExists = 0x0001
+flFileInfoCantWrite = 0x0002
+flFileInfoCantRead = 0x0004
 flFileInfoInvalidName = 0x0008
 cFileParameterError = -1
-
-

@@ -1,6 +1,4 @@
-from wmControl import wlmConst
-from wmControl import control
-from wmControl import wlmData
+from wmControl import control, wlmConst, wlmData
 
 
 class Callback:
@@ -9,7 +7,9 @@ class Callback:
 
     # Prints all measured frequencies of one WM
     # Unit: THz
-    def frequencysProcEx(self, ver: int, mode: int, int_val: int, double_val: float, result: int):
+    def frequencysProcEx(
+        self, ver: int, mode: int, int_val: int, double_val: float, result: int
+    ):
         const_to_channel = {
             wlmConst.MeasureMode.cmiWavelength1: 1,
             wlmConst.MeasureMode.cmiWavelength2: 2,
@@ -25,7 +25,9 @@ class Callback:
             mode = wlmConst.MeasureMode(mode)
             print(mode)
         except ValueError:
-            print(f"{mode} not defined. Version:{ver}, Timestamp?:{int_val}, Measurement?:{double_val}, res1:{result}")
+            print(
+                f"{mode} not defined. Version:{ver}, Timestamp?:{int_val}, Measurement?:{double_val}, res1:{result}"
+            )
 
         if (ver == self.version) and (mode in const_to_channel):
             print(
@@ -34,7 +36,9 @@ class Callback:
 
     # Prints all measured wavelengths one WM
     # Unit: nm
-    def wavelengthsProcEx(self, ver: int, mode: int, int_val: int, double_val: float, result: int):
+    def wavelengthsProcEx(
+        self, ver: int, mode: int, int_val: int, double_val: float, result: int
+    ):
         const_to_channel = {
             wlmConst.measure_mode.cmiWavelength1: 1,
             wlmConst.measure_mode.cmiWavelength2: 2,
@@ -47,7 +51,9 @@ class Callback:
         }
 
         if (ver == self.version) and (mode in const_to_channel):
-            print(f"Time:{int_val}, WM:{ver}, Channel:{const_to_channel[mode]}, Wavelength:{double_val:.8f}")
+            print(
+                f"Time:{int_val}, WM:{ver}, Channel:{const_to_channel[mode]}, Wavelength:{double_val:.8f}"
+            )
 
     # Prints all measured wavelengths of all WMs connected to the control-PC
     # Unit: nm
