@@ -1,6 +1,21 @@
 # wmControl
 WM HighFinesse WS8 control via ethernet
 
+# Installation instructions
+## Linux
+```
+python3 -m venv env  # Create a virtual environment for the build tools
+pip install -r requirements.txt
+pre-commit install
+```
+
+## Windows
+```
+conda install pip
+pip install -r requirements.txt
+pre-commit install
+```
+
 # Plains
 
 * Netaccess-plain: Communicates with WMs on the control PC, wlm... files and the wlmDataServer.exe are dedicated to this plain
