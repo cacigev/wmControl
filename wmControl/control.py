@@ -43,9 +43,7 @@ class Wavemeter:
         time.sleep(measure_time)
         # print(self.bfr)
 
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-        )  # remove thread
+        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
         print("Done")
 
     def frequencys(self, measure_time):
@@ -61,9 +59,7 @@ class Wavemeter:
         time.sleep(measure_time)
         # print(self.bfr)
 
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-        )  # remove thread
+        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
         print("Done")
 
     def allwavelengths(self, measure_time):
@@ -79,9 +75,7 @@ class Wavemeter:
         time.sleep(measure_time)
         # print(self.bfr)
 
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-        )  # remove thread
+        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
         print("Done")
 
     def getSwitcher(self, measure_time):
@@ -104,9 +98,7 @@ class Wavemeter:
             time.sleep(measure_time)
             # print(self.bfr)
 
-            wlmData.dll.Instantiate(
-                wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0
-            )  # remove thread
+            wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
             print("Done")
 
     def putBfr(self, itm):
@@ -122,9 +114,9 @@ class Wavemeter:
         self.bfr_pntr += 1
         print(self.bfr, self.bfr_pntr)
 
-    def __init__(self, ver, length=5, dll="./wmControl/wlmData.dll"):
+    def __init__(self, ver, dll_path, length=5):
         # Set attributes
-        self.DLL_PATH = dll
+        self.DLL_PATH = dll_path
         self.version = ver
         self.bfr_length = length
 
@@ -135,7 +127,4 @@ class Wavemeter:
         try:
             wlmData.LoadDLL(self.DLL_PATH)
         except:
-            sys.exit(
-                "Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!"
-                % self.DLL_PATH
-            )
+            sys.exit("Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!" % self.DLL_PATH)

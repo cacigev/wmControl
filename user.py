@@ -1,6 +1,6 @@
 from wmControl import control
 
-wm0 = control.Wavemeter(4734)  # Quips C 192.168.1.45
+wm0 = control.Wavemeter(4734, dll_path="./wmControl/wlmData.dll")  # Quips C 192.168.1.45
 # wm1 = control.wavemeter(536)  # Quips B 192.168.1.240
 # wm2 = control.wavemeter(4711) # Quips B 192.168.1.240
 
