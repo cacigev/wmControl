@@ -123,7 +123,7 @@ class Wavemeter:
         self.bfr_length = length
 
         # instantiate usercalls
-        self.threadCall = thread.callback(ver, self)
+        self.threadCall = thread.Callback(ver, self)
 
         # Load DLL Path
         try:
