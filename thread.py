@@ -11,15 +11,21 @@ class callback:
     # Unit: THz
     def frequencysProcEx(self, ver: int, mode: int, int_val: int, double_val: float, result: int):
         const_to_channel = {
-            wlmConst.cmiWavelength1: 1,
-            wlmConst.cmiWavelength2: 2,
-            wlmConst.cmiWavelength3: 3,
-            wlmConst.cmiWavelength4: 4,
-            wlmConst.cmiWavelength5: 5,
-            wlmConst.cmiWavelength6: 6,
-            wlmConst.cmiWavelength7: 7,
-            wlmConst.cmiWavelength8: 8,
+            wlmConst.MeasureMode.cmiWavelength1: 1,
+            wlmConst.MeasureMode.cmiWavelength2: 2,
+            wlmConst.MeasureMode.cmiWavelength3: 3,
+            wlmConst.MeasureMode.cmiWavelength4: 4,
+            wlmConst.MeasureMode.cmiWavelength5: 5,
+            wlmConst.MeasureMode.cmiWavelength6: 6,
+            wlmConst.MeasureMode.cmiWavelength7: 7,
+            wlmConst.MeasureMode.cmiWavelength8: 8,
         }
+
+        try:
+            mode = wlmConst.MeasureMode(mode)
+            print(mode)
+        except ValueError:
+            print(f"{mode} not defined. Version:{ver}, Timestamp?:{int_val}, Measurement?:{double_val}, res1:{result}")
 
         if (ver == self.version) and (mode in const_to_channel):
             print(
@@ -30,14 +36,14 @@ class callback:
     # Unit: nm
     def wavelengthsProcEx(self, ver: int, mode: int, int_val: int, double_val: float, result: int):
         const_to_channel = {
-            wlmConst.cmiWavelength1: 1,
-            wlmConst.cmiWavelength2: 2,
-            wlmConst.cmiWavelength3: 3,
-            wlmConst.cmiWavelength4: 4,
-            wlmConst.cmiWavelength5: 5,
-            wlmConst.cmiWavelength6: 6,
-            wlmConst.cmiWavelength7: 7,
-            wlmConst.cmiWavelength8: 8,
+            wlmConst.measure_mode.cmiWavelength1: 1,
+            wlmConst.measure_mode.cmiWavelength2: 2,
+            wlmConst.measure_mode.cmiWavelength3: 3,
+            wlmConst.measure_mode.cmiWavelength4: 4,
+            wlmConst.measure_mode.cmiWavelength5: 5,
+            wlmConst.measure_mode.cmiWavelength6: 6,
+            wlmConst.measure_mode.cmiWavelength7: 7,
+            wlmConst.measure_mode.cmiWavelength8: 8,
         }
 
         if (ver == self.version) and (mode in const_to_channel):

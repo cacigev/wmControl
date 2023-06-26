@@ -116,7 +116,7 @@ class wavemeter:
         self.bfr_pntr += 1
         print(self.bfr, self.bfr_pntr)
 
-    def __init__(self, ver, length=5, dll="./wmControl/wlmData.dll"):
+    def __init__(self, ver, length=5, dll=".Wavemeter/wmControl/wlmData.dll"):
         # Set attributes
         self.DLL_PATH = dll
         self.version = ver
@@ -129,4 +129,4 @@ class wavemeter:
         try:
             wlmData.LoadDLL(self.DLL_PATH)
         except:
-            sys.exit("Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!" % DLL_PATH)
+            sys.exit("Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!" % self.DLL_PATH)
