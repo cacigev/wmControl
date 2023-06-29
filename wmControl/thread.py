@@ -36,7 +36,7 @@ class Callback:
         else:
             if (ver == self.version) and (mode in const_to_channel):
                 self.__logger.info(
-                    "Time: %s, WM: %s, Channel: %s, Frequency: %.8f",
+                    "Time: %s, WM: %s, Channel: %s, Frequency: %.8f THz",
                     int_val,
                     ver,
                     const_to_channel[mode],
