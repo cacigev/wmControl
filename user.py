@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import sys
 
-from decouple import UndefinedValueError, config
+from decouple import config
 
 from wmControl import control
 
