@@ -120,7 +120,7 @@ class Wavemeter:
         self.version = ver
         self.bfr_length = length
 
-        # instantiate usercalls
+        # instantiate user calls
         self.threadCall = thread.Callback(ver, self)
 
         # Load DLL Path
