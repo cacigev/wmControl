@@ -25,7 +25,7 @@ class Callback:
             mode = wlmConst.MeasureMode(mode)
         except ValueError:
             self.__logger.warning(
-                "ValueError: %s not defined. Parameter: %s, %s, %s, %s, %s",
+                "Unknown status received: '%s' is not defined. Parameters: %s, %s, %s, %s, %s",
                 mode,
                 ver,
                 mode,
