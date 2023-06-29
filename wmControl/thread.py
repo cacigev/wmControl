@@ -1,3 +1,5 @@
+import logging
+
 from wmControl import control, wlmConst, wlmData
 
 
@@ -20,15 +22,14 @@ class Callback:
         }
 
         try:
+            if (ver == self.version) and (mode in const_to_channel):
+                print(
+                    f"Time:{int_val}, WM:{ver}, Channel:{const_to_channel[mode]}, Wavelength:{299792.458 / double_val:.8f}"
+                )
             mode = wlmConst.MeasureMode(mode)
             print(mode)
         except ValueError:
-            print(f"{mode} not defined. Version:{ver}, Timestamp?:{int_val}, Measurement?:{double_val}, res1:{result}")
-
-        if (ver == self.version) and (mode in const_to_channel):
-            print(
-                f"Time:{int_val}, WM:{ver}, Channel:{const_to_channel[mode]}, Wavelength:{299792.458 / double_val:.8f}"
-            )
+            self.__logger.warning(f"ValueError: {mode} not defined. Parameter: {ver}, {mode}, {int_val}, {double_val}, {result}")
 
     # Prints all measured wavelengths one WM
     # Unit: nm
@@ -82,5 +83,6 @@ class Callback:
             )
 
     def __init__(self, ver, wavemeter):
+        self.__logger = logging.getLogger(__name__)
         self.version = ver
-        self.put = wavemeter.putBfr
+        #self.put = wavemeter.putBfr
