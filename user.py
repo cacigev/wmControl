@@ -40,8 +40,6 @@ logging.basicConfig(
 )
 
 
-# wm0 = control.Wavemeter(4734, dll_path="./wmControl/wlmData.dll")  # Quips C 192.168.1.45
-# wm1 = control.Wavemeter(536)  # Quips B 192.168.1.240
 dll_path = None
 if sys.platform == "win32":
     dll_path = "./wmControl/wlmData.dll"
