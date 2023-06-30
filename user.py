@@ -50,4 +50,7 @@ elif sys.platform == "linux":
 
 wm2 = control.Wavemeter(4711, dll_path=dll_path)  # Quips B 192.168.1.240
 
-asyncio.run(wm2.main())
+try:
+    asyncio.run(wm2.main())
+except KeyboardInterrupt:
+    logging.getLogger(__name__).info("Application shut down.")
