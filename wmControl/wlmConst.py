@@ -54,7 +54,9 @@ ResERR_TCPErr = -26
 
 
 class MeasureMode(IntEnum):
-    # Mode Constants for Callback-Export and WaitForWLMEvent-function
+    """
+    Mode constants for Callback-Export (CallbackEx) and WaitForWLMEvent-function
+    """
     cmiResultMode = 1
     cmiRange = 2
     cmiPulse = 3
