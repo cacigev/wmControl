@@ -54,8 +54,8 @@ class Wavemeter:
                 print(i, val)
                 i += 1
                 async_q.task_done()
-        except asyncio.CancelledError:
-            print("foo")
+        finally:
+            self.__logger.info("Consumer shut down.")
 
     async def cancel_tasks(self, tasks: Set[asyncio.Task], shutdown_event: threading.Event) -> None:
         """
@@ -113,7 +113,4 @@ class Wavemeter:
         self.__logger = logging.getLogger(__name__)
 
         # Load dll path
-        try:
-            wlmData.LoadDLL(self.dll_path)
-        except:
-            sys.exit("Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!" % self.dll_path)
+        wlmData.LoadDLL(self.dll_path)
