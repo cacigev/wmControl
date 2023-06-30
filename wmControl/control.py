@@ -4,13 +4,16 @@ Contains the related classes for wavemeter control.
 
 import asyncio
 import ctypes
+import logging
 import sys
-import time
+import threading
+from contextlib import AsyncExitStack
+from typing import Set
 
 import janus
-import numpy as np
 
-from wmControl import thread, wlmConst, wlmData
+from wmControl import wlmData
+from wmControl.thread import Worker
 
 
 class Wavemeter:
@@ -22,9 +25,9 @@ class Wavemeter:
     dll_path : str
         The directory path where the wlmData.dll is.
     version : int
-        Version of the WM. Works like a serialnumber just not named like it.
+        Version of the WM. Works like a serial number just not named like it.
     callbacktype : function
-        Returning funtion prototype. Defining which kind of Parameters is passed to instantiate.
+        Returning function prototype. Defining which kind of Parameters is passed to instantiate.
 
     Parameters
     ----------
@@ -32,15 +35,12 @@ class Wavemeter:
         Version of the WM. Works like a serialnumber just not named like it.
     dll_path : str
         The directory path where the wlmData.dll is.
-    start_main : bool, default False
-        Switch the asynchronus/synchronus queue code on and off. Used for debugging.
-    length : int, default 5
-        Buffer length. Obsolet.
     """
 
     # Set attributes: DLL path, version and callbacktype
     dll_path = "./wmControl/wlmData.dll"
-    version = 0 #  0 should call the first activated WM, but dont rely on that.
+    version = 0  # 0 should call the first activated WM, but don't rely on that.
+
     callbacktype = ctypes.CFUNCTYPE(
         None,
         ctypes.c_int32,
@@ -78,45 +78,75 @@ class Wavemeter:
         Parameter
         ---------
         async_q: janus.AsyncQueue[int]
-            Asynchronus part of the queue wich is instantiated via control.wavemeter.
+            Asynchronous part of the queue which is instantiated via control.wavemeter.
         """
         i = 0
-        while "not terminated":
-            val = await async_q.get()
-            print(i, val)
-            i += 1
-            async_q.task_done()
+        try:
+            while "not terminated":
+                val = await async_q.get()
+                print(i, val)
+                i += 1
+                async_q.task_done()
+        except asyncio.CancelledError:
+            print("foo")
+
+    async def cancel_tasks(self, tasks: Set[asyncio.Task], shutdown_event: threading.Event) -> None:
+        """
+        Cancel all tasks and log any exceptions raised.
+
+        Parameters
+        ----------
+        tasks: Set[asyncio.Task]
+            The tasks to cancel
+        """
+        shutdown_event.set()
+        try:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            for result in results:
+                # Check for exceptions, but ignore asyncio.CancelledError, which inherits from BaseException not Exception
+                if isinstance(result, Exception):
+                    raise result
+        except Exception:  # pylint: disable=broad-except
+            self.__logger.exception("Error during shutdown of the controller.")
+
+    async def producer(self, result_queue, shutdown_event):
+        sync_worker = Worker(self.version)
+        try:
+            await asyncio.get_running_loop().run_in_executor(None, sync_worker.run, result_queue, shutdown_event)
+        except asyncio.CancelledError:
+            pass
+        finally:
+            print("producer done!")
 
     async def main(self) -> None:
         """
-        Manages synchronus and asynchronus part of the queue.
+        Manages synchronous and asynchronous part of the queue.
         """
-        queue: janus.Queue[int] = janus.Queue()
-        loop = asyncio.get_running_loop()
-        try:
-            fut = loop.run_in_executor(None, self.threadCall.callback, queue.sync_q)
-            await self.async_coro(queue.async_q)
-            await fut
-            queue.close()
-            await queue.wait_closed()
-        except KeyboardInterrupt:
-            print("KeyboardInterrupt: Thread is terminated.")
+        result_queue: janus.Queue[str] = janus.Queue()
+        shutdown_event: threading.Event = threading.Event()
+        async with AsyncExitStack() as stack:
+            tasks: set[asyncio.Task] = set()
+            stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
 
-    def __init__(self, ver: int, dll_path: str, start_main: bool=False, length: int=5) -> None:
+            producer = asyncio.create_task(self.producer(result_queue.sync_q, shutdown_event))
+            tasks.add(producer)
+            consumer = asyncio.create_task(self.async_coro(result_queue.async_q))
+            tasks.add(consumer)
+
+            await asyncio.gather(*tasks)
+
+    def __init__(self, ver, dll_path: str, length=5) -> None:
         # Set attributes
         self.dll_path = dll_path
         self.version = ver
         self.bfr_length = length
-
-        # instantiate user calls
-        self.threadCall = thread.Callback(ver, self)
+        self.__logger = logging.getLogger(__name__)
 
         # Load dll path
         try:
             wlmData.LoadDLL(self.dll_path)
         except:
-            sys.exit("Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!" % self.DLL_PATH)
-
-        # instantiate queue and loop
-        if start_main:
-            asyncio.run(self.main())
+            sys.exit("Error: Couldn't find DLL on path %s. Please check the DLL_PATH variable!" % self.dll_path)

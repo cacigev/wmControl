@@ -1,16 +1,24 @@
-import asyncio
 import ctypes
 import logging
-import time
+from threading import Event
 
 import janus
 
 from wmControl import wlmConst, wlmData
 
+callbacktype = ctypes.CFUNCTYPE(
+    None,
+    ctypes.c_int32,
+    ctypes.c_int32,
+    ctypes.c_int32,
+    ctypes.c_double,
+    ctypes.c_int32,
+)
 
-class Callback:
+
+class Worker:
     """
-    Managing the synchronus threads from the wavemeter.
+    Managing the synchronous threads from the wavemeter.
 
     Attributes
     ----------
@@ -19,22 +27,9 @@ class Callback:
     queue : Queue
         Holds the queue.
     """
-    version = 0
-    queue = None
 
-    def callback(self, sync_q: janus.SyncQueue[int]) -> None:
-        """
-        Producer for wavemeter data.
-
-        Uses the vendor solution for threading and writes all measurements or state changings of a connected wavemeter into the queue.
-
-        Parameters
-        ----------
-        sync_q: janus.SyncQueue[int]
-            The synchronus part of the queue, wich was instantiated in control.wavemeter.
-        """
-
-        def helper(ver: int, mode: int, int_val: int, double_val: float, result: int) -> None:
+    def _create_callback(self, output_queue):
+        def callback(ver: int, mode: int, int_val: int, double_val: float, result: int):
             """
             Function called by wlmData.dll via thread.
 
@@ -43,7 +38,7 @@ class Callback:
             ver: int
                 Version of the WM. Works like a serialnumber just not named like it.
             mode: int
-                cmi constants defined in wlmConst. Represents the different measurements or state changings of a 
+                cmi constants defined in wlmConst. Represents the different measurements or state changings of a
                 connected wavemeter. For more see wlmConst or manual.
             int_val: int
                 Meaning of this dependts on mode. Usually the time of a state change in miliseconds.
@@ -52,32 +47,35 @@ class Callback:
             result: int
                 Only relevant if mode is cmiSwitcherChannel. Then it holds the time of switching a channel.
             """
-            sync_q.put(f"Time:{int_val}, WM:{ver}, Channel:{mode}, Wavelength:{double_val:.8f}, Res1:{result}")
+            output_queue.put(f"Time:{int_val}, WM:{ver}, Channel:{mode}, Wavelength:{double_val:.8f}, Res1:{result}")
 
-        callbacktype = ctypes.CFUNCTYPE(
-            None,
-            ctypes.c_int32,
-            ctypes.c_int32,
-            ctypes.c_int32,
-            ctypes.c_double,
-            ctypes.c_int32,
-        )
-        callbackpointer = callbacktype(helper)
+        cb_pointer = callbacktype(callback)
 
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification,
-            wlmConst.cNotifyInstallCallbackEx,
-            callbackpointer,
-            0,
-        )
+        return cb_pointer
+
+    def run(self, output_queue: janus.SyncQueue[str], shutdown_event: Event) -> None:
+        """
+        Producer for wavemeter data.
+
+        Uses the vendor solution for threading and writes all measurements or state changings of a connected wavemeter into the queue.
+
+        Parameters
+        ----------
+        output_queue: janus.SyncQueue[int]
+            The synchronus part of the queue, wich was instantiated in control.wavemeter.
+        """
+
+        cb_pointer = self._create_callback(output_queue)
+
+        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyInstallCallbackEx, cb_pointer, 0)
+        self.__logger.info("Connected to host")
 
         try:
-            sync_q.join()
-        except KeyboardInterrupt:
-            print("KeyboardInterrupt: Thread will be terminated.")
-            raise
-        finally:
+            shutdown_event.wait()
+            # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
+        finally:
+            self.__logger.info("Disconnected from host. Shutting down worker.")
 
     # Prints all measured frequencies of one WM
     # Unit: THz
@@ -88,14 +86,14 @@ class Callback:
         Parameters
         ----------
         ver: int
-            Version of the WM. Works like a serialnumber just not named like it.
+            Version of the WM. Works like a serial number just not named like it.
         mode: int
-            cmi constants defined in wlmConst. Represents the different measurements or state changings of a 
+            cmi constants defined in wlmConst. Represents the different measurements or state changings of a
             connected wavemeter. For more see wlmConst or manual.
         int_val: int
-            Meaning of this dependts on mode. Usually the time of a state change in miliseconds.
+            Meaning of this depends on mode. Usually the time of a state change in milliseconds.
         double_val: float
-            Meaning of this dependts on mode. Usually the value of a measurement.
+            Meaning of this depends on mode. Usually the value of a measurement.
         result: int
             Only relevant if mode is cmiSwitcherChannel. Then it holds the time of switching a channel.
 
@@ -128,7 +126,7 @@ class Callback:
                 result,
             )
         else:
-            if (ver == self.version) and (mode in const_to_channel):
+            if (ver == self._version) and (mode in const_to_channel):
                 self.__logger.info(
                     "Time: %s, WM: %s, Channel: %s, Frequency: %.8f THz",
                     int_val,
@@ -137,6 +135,6 @@ class Callback:
                     299792.458 / double_val,
                 )
 
-    def __init__(self, ver, wavemeter):
+    def __init__(self, ver):
         self.__logger = logging.getLogger(__name__)
-        self.version = ver
+        self._version = ver
