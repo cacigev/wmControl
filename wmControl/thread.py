@@ -1,10 +1,11 @@
-import logging
-import janus
 import asyncio
-import time
 import ctypes
+import logging
+import time
 
-from wmControl import control, wlmConst, wlmData
+import janus
+
+from wmControl import wlmConst, wlmData
 
 
 class Callback:
@@ -12,11 +13,11 @@ class Callback:
     queue = None
 
     def callback(self, sync_q: janus.SyncQueue[int]) -> None:
-
         def helper(ver: int, mode: int, int_val: int, double_val: float, result: int):
             sync_q.put(f"Time:{int_val}, WM:{ver}, Channel:{mode}, Wavelength:{double_val:.8f}, Res1:{result}")
 
-        callbacktype = ctypes.CFUNCTYPE(None,
+        callbacktype = ctypes.CFUNCTYPE(
+            None,
             ctypes.c_int32,
             ctypes.c_int32,
             ctypes.c_int32,
@@ -25,20 +26,20 @@ class Callback:
         )
         callbackpointer = callbacktype(helper)
 
+        wlmData.dll.Instantiate(
+            wlmConst.cInstNotification,
+            wlmConst.cNotifyInstallCallbackEx,
+            callbackpointer,
+            0,
+        )
+
         try:
-            while "not terminated":
-                wlmData.dll.Instantiate(
-                    wlmConst.cInstNotification,
-                    wlmConst.cNotifyInstallCallbackEx,
-                    callbackpointer,
-                    0,
-                )
-                time.sleep(1)
+            sync_q.join()
         except KeyboardInterrupt:
             print("KeyboardInterrupt: Thread will be terminated.")
-        finally: wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
-
-        sync_q.join()
+            raise
+        finally:
+            wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
 
     # Prints all measured frequencies of one WM
     # Unit: THz

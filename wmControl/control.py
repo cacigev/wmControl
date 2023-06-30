@@ -1,17 +1,15 @@
+import asyncio
 import ctypes
 import sys
 import time
 
-import numpy as np
 import janus
-import asyncio
+import numpy as np
 
 from wmControl import thread, wlmConst, wlmData
 
 
 class Wavemeter:
-    # Set attributes: DLL path, version and callbacktype
-    DLL_PATH = "./wmControl/wlmData.dll"
     version = 0  # Version of the WM. Works like a serialnumber just not named like it. 0 should call the first activated WM, but dont rely on that.
     callbacktype = ctypes.CFUNCTYPE(
         None,
@@ -59,7 +57,7 @@ class Wavemeter:
     async def main(self) -> None:
         queue: janus.Queue[int] = janus.Queue()
         loop = asyncio.get_running_loop()
-        #print("hello")
+        # print("hello")
         try:
             fut = loop.run_in_executor(None, self.threadCall.callback, queue.sync_q)
             await self.async_coro(queue.async_q)
