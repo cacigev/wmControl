@@ -3,7 +3,6 @@ Contains the related classes for wavemeter control.
 """
 
 import asyncio
-import ctypes
 import logging
 import sys
 import threading
@@ -26,8 +25,6 @@ class Wavemeter:
         The directory path where the wlmData.dll is.
     version : int
         Version of the WM. Works like a serial number just not named like it.
-    callbacktype : function
-        Returning function prototype. Defining which kind of Parameters is passed to instantiate.
 
     Parameters
     ----------
@@ -37,37 +34,7 @@ class Wavemeter:
         The directory path where the wlmData.dll is.
     """
 
-    # Set attributes: DLL path, version and callbacktype
-    dll_path = "./wmControl/wlmData.dll"
     version = 0  # 0 should call the first activated WM, but don't rely on that.
-
-    callbacktype = ctypes.CFUNCTYPE(
-        None,
-        ctypes.c_int32,
-        ctypes.c_int32,
-        ctypes.c_int32,
-        ctypes.c_double,
-        ctypes.c_int32,
-    )
-
-    # Instantiate thread
-    threadCall = None
-
-    def frequencys(self, measure_time):
-        callbackpointer = self.callbacktype(self.threadCall.frequencysProcEx)
-        wlmData.dll.Instantiate(
-            wlmConst.cInstNotification,
-            wlmConst.cNotifyInstallCallbackEx,
-            callbackpointer,
-            0,
-        )  # instantiate thread
-
-        # Wait for events (frequency) until the acquisition time has passed
-        time.sleep(measure_time)
-        # print(self.bfr)
-
-        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)  # remove thread
-        print("Done")
 
     async def async_coro(self, async_q: janus.AsyncQueue[int]) -> None:
         """
