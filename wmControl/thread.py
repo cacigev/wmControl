@@ -23,7 +23,8 @@ class Worker:
     Attributes
     ----------
     version : int
-        Version of the WM. Works like a serialnumber just not named like it. 0 should call the first activated WM, but dont rely on that.
+        Version of the WM. Works like a serial number just not named like it. 0 should call the first activated WM, but
+        don't rely on that.
     queue : Queue
         Holds the queue.
     """
@@ -41,9 +42,9 @@ class Worker:
                 cmi constants defined in wlmConst. Represents the different measurements or state changings of a
                 connected wavemeter. For more see wlmConst or manual.
             int_val: int
-                Meaning of this dependts on mode. Usually the time of a state change in miliseconds.
+                Meaning of this depends on mode. Usually the time of a state change in milliseconds.
             double_val: float
-                Meaning of this dependts on mode. Usually the value of a measurement.
+                Meaning of this depends on mode. Usually the value of a measurement.
             result: int
                 Only relevant if mode is cmiSwitcherChannel. Then it holds the time of switching a channel.
             """
