@@ -4,6 +4,8 @@
 
 from enum import IntEnum
 
+packages = {}
+
 # Instantiating Constants for 'RFC' parameter
 cInstCheckForWLM = -1
 cInstResetCalc = 0
@@ -633,3 +635,84 @@ flFileInfoCantWrite = 0x0002
 flFileInfoCantRead = 0x0004
 flFileInfoInvalidName = 0x0008
 cFileParameterError = -1
+
+class Wavelength:
+    """
+    Instatiate measured wavelength object.
+
+    Attributes
+    ----------
+    version : int
+        Version of the WM. Works like a serial number just not named like it.
+    channel : int
+        Channel of the wavemeter.
+    time : int
+        Timestamp of measurement in milliseconds.
+    wavelength : double
+        Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
+    """
+
+    def __str__(self):
+        return f"({self.time} ms) WM {self.product_id} measured at channel {self.channel} {self.double_val} nm."
+
+    def __init__(self, **kwargs):
+        self.product_id = version
+        self.time = int_val
+        self.channel = channel
+        self.wavelength = double_val
+
+class Wavelength1(Wavelength):
+    """Implements child of Wavelength() for channel 1."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=1, **kwargs)
+
+class Wavelength2(Wavelength):
+    """Implements child of Wavelength() for channel 2."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=2, **kwargs)
+
+class Wavelength3(Wavelength):
+    """Implements child of Wavelength() for channel 3."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=3, **kwargs)
+
+class Wavelength4(Wavelength):
+    """Implements child of Wavelength() for channel 4."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=4, **kwargs)
+
+class Wavelength5(Wavelength):
+    """Implements child of Wavelength() for channel 5."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=5, **kwargs)
+
+class Wavelength6(Wavelength):
+    """Implements child of Wavelength() for channel 6."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=6, **kwargs)
+
+class Wavelength7(Wavelength):
+    """Implements child of Wavelength() for channel 7."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=7, **kwargs)
+
+class Wavelength8(Wavelength):
+    """Implements child of Wavelength() for channel 8."""
+    def __init__(self, **kwargs):
+        super.__init__(channel=8, **kwargs)
+
+def factory(mode):
+    packages[f"{mode}"] = mode()
+
+def getfactory(mode, **kwargs):
+    return packages[mode](**kwargs)
+
+
+factory(Wavelength1)
+factory(Wavelength2)
+factory(Wavelength3)
+factory(Wavelength4)
+factory(Wavelength5)
+factory(Wavelength6)
+factory(Wavelength7)
+factory(Wavelength8)

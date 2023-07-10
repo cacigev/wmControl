@@ -75,6 +75,7 @@ class Worker:
             shutdown_event.wait()
             # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
+            self.__logger.info("Removed callback.")
         finally:
             self.__logger.info("Disconnected from host. Shutting down worker.")
 
