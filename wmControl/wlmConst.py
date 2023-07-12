@@ -645,11 +645,22 @@ class DataPackage:
     product_id: int
 
 
-@dataclass(init=False)
+@dataclass
 class Wavelength(DataPackage):
     """
     The wavelength measured on a channel. Do not directly instantiate this class. Use a sibling to correctly set the
     channel and mode enum.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    channel : int
+        Channel of the wavemeter. The channel is a 0 based index.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    wavelength : float
+        Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
     """
 
     timestamp: int
@@ -659,24 +670,6 @@ class Wavelength(DataPackage):
     def __str__(self):
         return f"Wavelength measurement: {self.wavelength} nm | timestamp {self.timestamp} | channel {self.channel} | wavemeter {self.product_id}."
 
-    def __init__(self, version: int, timestamp: int, wavelength: float, channel: int):
-        """
-        Parameters
-        ----------
-        version : int
-            Version of the WM. Might be a serial number. Do not count on it though.
-        channel : int
-            Channel of the wavemeter. The channel is a 0 based index.
-        timestamp : int
-            Timestamp of the measurement in milliseconds.
-        wavelength : float
-            Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
-        """
-        super().__init__(product_id=version)
-        self.time = timestamp
-        self.wavelength = Decimal(wavelength)
-        self.channel = channel
-
 
 @dataclass(init=False)
 class Wavelength1(Wavelength):
@@ -685,7 +678,7 @@ class Wavelength1(Wavelength):
     mode = MeasureMode.cmiWavelength1
 
     def __init__(self, version, int_val, double_val):
-        super().__init__(version, int_val, double_val, channel=0)
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=0)
 
 
 class Wavelength2(Wavelength):
