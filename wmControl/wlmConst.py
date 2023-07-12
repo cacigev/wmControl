@@ -1,6 +1,7 @@
 #
 # wlmData API constants generated from wlmData.h
 #
+from dataclasses import dataclass
 from decimal import Decimal
 from enum import IntEnum
 
@@ -638,27 +639,27 @@ flFileInfoInvalidName = 0x0008
 cFileParameterError = -1
 
 
+@dataclass
 class DataPackage:
-    MODE = None
-
-    @property
-    def product_id(self) -> int:
-        return self.__product_id
-
-    def __init__(self, product_id: int):
-        self.__product_id = product_id
+    MODE: MeasureMode
+    product_id: int
 
 
+@dataclass(init=False)
 class Wavelength(DataPackage):
     """
     The wavelength measured on a channel. Do not directly instantiate this class. Use a sibling to correctly set the
-    channel and the mode enum.
+    channel and mode enum.
     """
 
-    def __str__(self):
-        return f"({self.__time} ms) WM {self.product_id} measured at channel {self.__channel} {self.__wavelength} nm."
+    timestamp: int
+    wavelength: Decimal
+    channel: int
 
-    def __init__(self, version, timestamp, wavelength, channel):
+    def __str__(self):
+        return f"Wavelength measurement: {self.wavelength} nm | timestamp {self.timestamp} | channel {self.channel} | wavemeter {self.product_id}."
+
+    def __init__(self, mode: MeasureMode, version: int, timestamp: int, wavelength: float, channel: int):
         """
         Parameters
         ----------
@@ -671,19 +672,18 @@ class Wavelength(DataPackage):
         wavelength : float
             Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
         """
-        super().__init__(product_id=version)
-        self.__time = timestamp
-        self.__wavelength = Decimal(wavelength)
-        self.__channel = channel
+        super().__init__(mode=mode, product_id=version)
+        self.time = timestamp
+        self.wavelength = Decimal(wavelength)
+        self.channel = channel
 
 
+@dataclass(init=False)
 class Wavelength1(Wavelength):
     """Wavelength CH1"""
 
-    MODE = MeasureMode.cmiWavelength1
-
     def __init__(self, version, int_val, double_val):
-        super().__init__(version, int_val, double_val, channel=0)
+        super().__init__(MeasureMode.cmiWavelength1, version, int_val, double_val, channel=0)
 
 
 class Wavelength2(Wavelength):
