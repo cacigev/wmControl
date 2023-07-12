@@ -1,7 +1,7 @@
 #
 # wlmData API constants generated from wlmData.h
 #
-
+from decimal import Decimal
 from enum import IntEnum
 
 packages = {}
@@ -59,6 +59,7 @@ class MeasureMode(IntEnum):
     """
     Mode constants for Callback-Export (CallbackEx) and WaitForWLMEvent-function
     """
+
     cmiResultMode = 1
     cmiRange = 2
     cmiPulse = 3
@@ -636,83 +637,99 @@ flFileInfoCantRead = 0x0004
 flFileInfoInvalidName = 0x0008
 cFileParameterError = -1
 
-class Wavelength:
-    """
-    Instatiate measured wavelength object.
 
-    Attributes
-    ----------
-    version : int
-        Version of the WM. Works like a serial number just not named like it.
-    channel : int
-        Channel of the wavemeter.
-    time : int
-        Timestamp of measurement in milliseconds.
-    wavelength : double
-        Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
+class DataPackage:
+    MODE = None
+
+    @property
+    def product_id(self) -> int:
+        return self.__product_id
+
+    def __init__(self, product_id: int):
+        self.__product_id = product_id
+
+
+class Wavelength(DataPackage):
+    """
+    The wavelength measured on a channel. Do not directly instantiate this class. Use a sibling to correctly set the
+    channel and the mode enum.
     """
 
     def __str__(self):
-        return f"({self.time} ms) WM {self.product_id} measured at channel {self.channel} {self.double_val} nm."
+        return f"({self.__time} ms) WM {self.product_id} measured at channel {self.__channel} {self.__wavelength} nm."
 
-    def __init__(self, **kwargs):
-        self.product_id = version
-        self.time = int_val
-        self.channel = channel
-        self.wavelength = double_val
+    def __init__(self, version, timestamp, wavelength, channel):
+        """
+        Parameters
+        ----------
+        version : int
+            Version of the WM. Might be a serial number. Do not count on it though.
+        channel : int
+            Channel of the wavemeter. The channel is a 0 based index.
+        timestamp : int
+            Timestamp of the measurement in milliseconds.
+        wavelength : float
+            Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
+        """
+        super().__init__(product_id=version)
+        self.__time = timestamp
+        self.__wavelength = Decimal(wavelength)
+        self.__channel = channel
+
 
 class Wavelength1(Wavelength):
-    """Implements child of Wavelength() for channel 1."""
-    def __init__(self, **kwargs):
-        super.__init__(channel=1, **kwargs)
+    """Wavelength CH1"""
+
+    MODE = MeasureMode.cmiWavelength1
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(version, int_val, double_val, channel=0)
+
 
 class Wavelength2(Wavelength):
     """Implements child of Wavelength() for channel 2."""
+
     def __init__(self, **kwargs):
         super.__init__(channel=2, **kwargs)
 
+
 class Wavelength3(Wavelength):
     """Implements child of Wavelength() for channel 3."""
+
     def __init__(self, **kwargs):
         super.__init__(channel=3, **kwargs)
 
+
 class Wavelength4(Wavelength):
     """Implements child of Wavelength() for channel 4."""
+
     def __init__(self, **kwargs):
         super.__init__(channel=4, **kwargs)
 
+
 class Wavelength5(Wavelength):
     """Implements child of Wavelength() for channel 5."""
+
     def __init__(self, **kwargs):
         super.__init__(channel=5, **kwargs)
 
+
 class Wavelength6(Wavelength):
     """Implements child of Wavelength() for channel 6."""
+
     def __init__(self, **kwargs):
         super.__init__(channel=6, **kwargs)
 
+
 class Wavelength7(Wavelength):
     """Implements child of Wavelength() for channel 7."""
+
     def __init__(self, **kwargs):
         super.__init__(channel=7, **kwargs)
 
+
 class Wavelength8(Wavelength):
     """Implements child of Wavelength() for channel 8."""
+
     def __init__(self, **kwargs):
         super.__init__(channel=8, **kwargs)
-
-def factory(mode):
-    packages[f"{mode}"] = mode()
-
-def getfactory(mode, **kwargs):
-    return packages[mode](**kwargs)
-
-
-factory(Wavelength1)
-factory(Wavelength2)
-factory(Wavelength3)
-factory(Wavelength4)
-factory(Wavelength5)
-factory(Wavelength6)
-factory(Wavelength7)
-factory(Wavelength8)
