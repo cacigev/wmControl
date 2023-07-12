@@ -659,7 +659,7 @@ class Wavelength(DataPackage):
     def __str__(self):
         return f"Wavelength measurement: {self.wavelength} nm | timestamp {self.timestamp} | channel {self.channel} | wavemeter {self.product_id}."
 
-    def __init__(self, mode: MeasureMode, version: int, timestamp: int, wavelength: float, channel: int):
+    def __init__(self, version: int, timestamp: int, wavelength: float, channel: int):
         """
         Parameters
         ----------
@@ -672,7 +672,7 @@ class Wavelength(DataPackage):
         wavelength : float
             Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
         """
-        super().__init__(mode=mode, product_id=version)
+        super().__init__(product_id=version)
         self.time = timestamp
         self.wavelength = Decimal(wavelength)
         self.channel = channel
@@ -682,8 +682,10 @@ class Wavelength(DataPackage):
 class Wavelength1(Wavelength):
     """Wavelength CH1"""
 
+    mode = MeasureMode.cmiWavelength1
+
     def __init__(self, version, int_val, double_val):
-        super().__init__(MeasureMode.cmiWavelength1, version, int_val, double_val, channel=0)
+        super().__init__(version, int_val, double_val, channel=0)
 
 
 class Wavelength2(Wavelength):
