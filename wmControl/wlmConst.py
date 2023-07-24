@@ -970,7 +970,7 @@ class DevitationSensitivityFactor(DataPackage):
         Devitation sensitivity factor.
     """
 
-    mode = MeasureMode.cmiDevitationSensitivityFactor
+    mode = MeasureMode.cmiDeviationSensitivityFactor
 
     timestamp: int
     devitation_sensitivity_factor: Decimal
