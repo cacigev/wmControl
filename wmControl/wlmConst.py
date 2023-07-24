@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from decimal import Decimal
 from enum import IntEnum
 
-packages = {}
 
 # Instantiating Constants for 'RFC' parameter
 cInstCheckForWLM = -1
@@ -770,11 +769,6 @@ class Temperature(DataPackage):
     timestamp: int
     temperature: Decimal
 
-    def __init__(self, version, int_val, double_val):
-        self.product_id = version
-        self.timestamp = int_val
-        self.temperature = Decimal(double_val)
-
     def __str__(self):
         return f"Temperature measurement: {self.temperature} C | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
@@ -797,11 +791,6 @@ class Distance(DataPackage):
 
     timestamp: int
     distance: Decimal
-
-    def __init__(self, version, int_val, double_val):
-        self.product_id = version
-        self.timestamp = int_val
-        self.distance = Decimal(double_val)
 
     def __str__(self):
         return f"Distance measurement: {self.distance} Arb.U.? | timestamp {self.timestamp} | wavemeter {self.product_id}."
@@ -826,11 +815,6 @@ class Linewidth(DataPackage):
     timestamp: int
     linewidth: Decimal
 
-    def __init__(self, version, int_val, double_val):
-        self.product_id = version
-        self.timestamp = int_val
-        self.linewidth = Decimal(double_val)
-
     def __str__(self):
         return f"Linewidth measurement: {self.linewidth} nm | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
@@ -854,11 +838,6 @@ class AnalogIn(DataPackage):
     timestamp: int
     analog_input: Decimal
 
-    def __init__(self, version, int_val, double_val):
-        self.product_id = version
-        self.timestamp = int_val
-        self.analog_input = Decimal(double_val)
-
     def __str__(self):
         return f"Analog input measurement: {self.analog_input} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
@@ -881,11 +860,6 @@ class AnalogOut(DataPackage):
 
     timestamp: int
     analog_output: Decimal
-
-    def __init__(self, version, int_val, double_val):
-        self.product_id = version
-        self.timestamp = int_val
-        self.analog_output = Decimal(double_val)
 
     def __str__(self):
         return f"Analog output measurement: {self.analog_output} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
@@ -977,11 +951,6 @@ class ExternalInput(DataPackage):
     timestamp: int
     external_input: Decimal
 
-    def __init__(self, version, int_val, double_val):
-        self.product_id = version
-        self.timestamp = int_val
-        self.external_input = Decimal(double_val)
-
     def __str__(self):
         return f"External input measurement: {self.external_input} Arb.U.? |
                  timestamp {self.timestamp} | wavemeter {self.product_id}."
@@ -1005,11 +974,6 @@ class DevitationSensitivityFactor(DataPackage):
 
     timestamp: int
     devitation_sensitivity_factor: Decimal
-
-    def __init__(self, version, int_val, double_val):
-        self.product_id = version
-        self.timestamp = int_val
-        self.devitation_sensitivity_factor = Decimal(double_val)
 
     def __str__(self):
         return f"Devitation sensitivity factor measurement: {self.devitation_sensitivity_factor} Arb.U.? |
