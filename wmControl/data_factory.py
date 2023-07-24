@@ -4,13 +4,21 @@ from typing import Type
 
 from wmControl.wlmConst import DataPackage, MeasureMode
 from wmControl.wlmConst import Wavelength1, Wavelength2, Wavelength3, Wavelength4, Wavelength5, Wavelength6, Wavelength7, Wavelength8
-from wmControl.wlmConst import Temperature
+from wmControl.wlmConst import Temperature, Distance, Linewidth, AnalogIn, AnalogOut
+from wmControl.wlmConst import PID_P, PID_I, PID_D, PID_T, PID_dt
+from wmControl.wlmConst import ExternalInput, DevitationSensitivityFactor
 
 
 class DataTypeFactory:
     """
     The factory. Do not import this, as it is instantiated below to create a
     class object.
+    """
+
+    __registered_data_types: dict[MeasureMode, Type[DataPackage]] = {} 
+    """ 
+    ???? Ohne diese Zeile feuert er 
+    AttributeError: type object 'DataTypeFactory' has no attribute '_DataTypeFactory__registered_data_types'
     """
 
     def __init__(self):
@@ -20,7 +28,7 @@ class DataTypeFactory:
         """
         Register a new type of data package with the factory
         """
-        self.__registered_data_types[package.MODE] = package
+        self.__registered_data_types[package.mode] = package
 
     def get(self, mode: MeasureMode | int, *args, **kwargs) -> DataPackage:
         """

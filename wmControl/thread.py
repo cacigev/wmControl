@@ -5,6 +5,7 @@ from threading import Event
 import janus
 
 from wmControl import wlmConst, wlmData
+from wmControl.data_factory import DataTypeFactory as Factory
 
 callbacktype = ctypes.CFUNCTYPE(
     None,
@@ -48,7 +49,8 @@ class Worker:
             result: int
                 Only relevant if mode is cmiSwitcherChannel. Then it holds the time of switching a channel.
             """
-            output_queue.put(f"Time:{int_val}, WM:{ver}, Channel:{mode}, Wavelength:{double_val:.8f}, Res1:{result}")
+            output_queue.put(Factory.get(Factory, mode, ver, int_val, double_val, result))
+            #output_queue.put(f"Time:{int_val}, WM:{ver}, Channel:{mode}, Wavelength:{double_val:.8f}, Res1:{result}")
 
         cb_pointer = callbacktype(callback)
 

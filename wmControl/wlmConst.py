@@ -640,7 +640,7 @@ cFileParameterError = -1
 
 @dataclass
 class DataPackage:
-    MODE: MeasureMode
+    mode: MeasureMode
     product_id: int
 
 
