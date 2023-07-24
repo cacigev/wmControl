@@ -793,7 +793,7 @@ class Distance(DataPackage):
     distance: Decimal
 
     def __str__(self):
-        return f"Distance measurement: {self.distance} Arb.U.? | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        return f"Distance measurement: {self.distance} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 @dataclass
 class Linewidth(DataPackage):
@@ -884,7 +884,7 @@ class PID(DataPackage):
     parameter: str
 
     def __str__(self):
-        return f"PID measurement: {self.value} Arb.U.? | timestamp {self.timestamp} | parameter {self.parameter} | wavemeter {self.product_id}."
+        return f"PID measurement: {self.value} Arb.U. | timestamp {self.timestamp} | parameter {self.parameter} | wavemeter {self.product_id}."
 
 @dataclass(init=False)
 class PID_P(PID):
@@ -952,7 +952,7 @@ class ExternalInput(DataPackage):
     external_input: Decimal
 
     def __str__(self):
-        return f"External input measurement: {self.external_input} Arb.U.? |
+        return f"External input measurement: {self.external_input} Arb.U. | \
                  timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 @dataclass
@@ -976,5 +976,5 @@ class DevitationSensitivityFactor(DataPackage):
     devitation_sensitivity_factor: Decimal
 
     def __str__(self):
-        return f"Devitation sensitivity factor measurement: {self.devitation_sensitivity_factor} Arb.U.? |
+        return f"Devitation sensitivity factor measurement: {self.devitation_sensitivity_factor} Arb.U. | \
                  timestamp {self.timestamp} | wavemeter {self.product_id}."
