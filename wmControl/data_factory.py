@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Type
 
-from wmControl.wlmConst import DataPackage, MeasureMode, Wavelength1
+from wmControl.wlmConst import DataPackage, MeasureMode
+from wmControl.wlmConst import Wavelength1, Wavelength2, Wavelength3, Wavelength4, Wavelength5, Wavelength6, Wavelength7, Wavelength8
+from wmControl.wlmConst import Temperature
 
 
 class DataTypeFactory:
@@ -33,3 +35,22 @@ class DataTypeFactory:
 data_factory = DataTypeFactory()
 
 data_factory.register(Wavelength1)
+data_factory.register(Wavelength2)
+data_factory.register(Wavelength3)
+data_factory.register(Wavelength4)
+data_factory.register(Wavelength5)
+data_factory.register(Wavelength6)
+data_factory.register(Wavelength7)
+data_factory.register(Wavelength8)
+data_factory.register(Temperature)
+data_factory.register(Distance)
+data_factory.register(Linewidth)
+data_factory.register(AnalogIn)
+data_factory.register(AnalogOut)
+data_factory.register(PID_P)
+data_factory.register(PID_I)
+data_factory.register(PID_D)
+data_factory.register(PID_T)
+data_factory.register(PID_dt)
+data_factory.register(ExternalInput)
+data_factory.register(DevitationSensitivityFactor)

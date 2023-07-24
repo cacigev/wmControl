@@ -681,50 +681,336 @@ class Wavelength1(Wavelength):
         super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=0)
 
 
+@dataclass(init=False)
 class Wavelength2(Wavelength):
-    """Implements child of Wavelength() for channel 2."""
+    """Wavelength CH2"""
 
-    def __init__(self, **kwargs):
-        super.__init__(channel=2, **kwargs)
+    mode = MeasureMode.cmiWavelength2
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=1)
 
 
+@dataclass(init=False)
 class Wavelength3(Wavelength):
-    """Implements child of Wavelength() for channel 3."""
+    """Wavelength CH3"""
 
-    def __init__(self, **kwargs):
-        super.__init__(channel=3, **kwargs)
+    mode = MeasureMode.cmiWavelength3
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=2)
 
 
+@dataclass(init=False)
 class Wavelength4(Wavelength):
-    """Implements child of Wavelength() for channel 4."""
+    """Wavelength CH4"""
 
-    def __init__(self, **kwargs):
-        super.__init__(channel=4, **kwargs)
+    mode = MeasureMode.cmiWavelength4
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=3)
 
 
+@dataclass(init=False)
 class Wavelength5(Wavelength):
-    """Implements child of Wavelength() for channel 5."""
+    """Wavelength CH5"""
 
-    def __init__(self, **kwargs):
-        super.__init__(channel=5, **kwargs)
+    mode = MeasureMode.cmiWavelength5
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=4)
 
 
+@dataclass(init=False)
 class Wavelength6(Wavelength):
-    """Implements child of Wavelength() for channel 6."""
+    """Wavelength CH6"""
 
-    def __init__(self, **kwargs):
-        super.__init__(channel=6, **kwargs)
+    mode = MeasureMode.cmiWavelength6
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=5)
 
 
+@dataclass(init=False)
 class Wavelength7(Wavelength):
-    """Implements child of Wavelength() for channel 7."""
+    """Wavelength CH7"""
 
-    def __init__(self, **kwargs):
-        super.__init__(channel=7, **kwargs)
+    mode = MeasureMode.cmiWavelength7
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=6)
 
 
+@dataclass(init=False)
 class Wavelength8(Wavelength):
-    """Implements child of Wavelength() for channel 8."""
+    """Wavelength CH8"""
 
-    def __init__(self, **kwargs):
-        super.__init__(channel=8, **kwargs)
+    mode = MeasureMode.cmiWavelength8
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=7)
+
+@dataclass
+class Temperature(DataPackage):
+    """
+    The measured Temperature in Celsius.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    temperature : float
+        Measured temperature in celsius.
+    """
+
+    mode = MeasureMode.cmiTemperature
+
+    timestamp: int
+    temperature: Decimal
+
+    def __init__(self, version, int_val, double_val):
+        self.product_id = version
+        self.timestamp = int_val
+        self.temperature = Decimal(double_val)
+
+    def __str__(self):
+        return f"Temperature measurement: {self.temperature} C | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+@dataclass
+class Distance(DataPackage):
+    """
+    The distance between signal 1 and 2 in multichannel switch versions with Diff option.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    distance : float
+        Distance between signal 1 and 2.
+    """
+
+    mode = MeasureMode.cmiDistance
+
+    timestamp: int
+    distance: Decimal
+
+    def __init__(self, version, int_val, double_val):
+        self.product_id = version
+        self.timestamp = int_val
+        self.distance = Decimal(double_val)
+
+    def __str__(self):
+        return f"Distance measurement: {self.distance} Arb.U.? | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+@dataclass
+class Linewidth(DataPackage):
+    """
+    The calculated Linewidth in nm.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    linewidth : float
+        Linewidth in nm.
+    """
+
+    mode = MeasureMode.cmiLinewidth
+
+    timestamp: int
+    linewidth: Decimal
+
+    def __init__(self, version, int_val, double_val):
+        self.product_id = version
+        self.timestamp = int_val
+        self.linewidth = Decimal(double_val)
+
+    def __str__(self):
+        return f"Linewidth measurement: {self.linewidth} nm | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+@dataclass
+class AnalogIn(DataPackage):
+    """
+    The analog input voltage in versions with analog input port.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    analog_input : float
+        Analog input in volt.
+    """
+
+    mode = MeasureMode.cmiAnalogIn
+
+    timestamp: int
+    analog_input: Decimal
+
+    def __init__(self, version, int_val, double_val):
+        self.product_id = version
+        self.timestamp = int_val
+        self.analog_input = Decimal(double_val)
+
+    def __str__(self):
+        return f"Analog input measurement: {self.analog_input} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+@dataclass
+class AnalogOut(DataPackage):
+    """
+    The analog output voltage in versions with analog output port.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    analog_output : float
+        Analog output in volt.
+    """
+
+    mode = MeasureMode.cmiAnalogOut
+
+    timestamp: int
+    analog_output: Decimal
+
+    def __init__(self, version, int_val, double_val):
+        self.product_id = version
+        self.timestamp = int_val
+        self.analog_output = Decimal(double_val)
+
+    def __str__(self):
+        return f"Analog output measurement: {self.analog_output} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+@dataclass
+class PID(DataPackage):
+    """
+    The P, I, D, T and dt parameters in PID regulation versions.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    analog_output : float
+        Analog output in volt.
+    """
+
+    timestamp: int
+    value: Decimal
+    parameter: str
+
+    def __str__(self):
+        return f"PID measurement: {self.value} Arb.U.? | timestamp {self.timestamp} | parameter {self.parameter} | wavemeter {self.product_id}."
+
+@dataclass(init=False)
+class PID_P(PID):
+    """The P parameter in PID regulation versions."""
+
+    mode = MeasureMode.cmiPID_P
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="P")
+
+@dataclass(init=False)
+class PID_I(PID):
+    """The I parameter in PID regulation versions."""
+
+    mode = MeasureMode.cmiPID_I
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="I")
+
+@dataclass(init=False)
+class PID_D(PID):
+    """The D parameter in PID regulation versions."""
+
+    mode = MeasureMode.cmiPID_D
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="D")
+
+@dataclass(init=False)
+class PID_T(PID):
+    """The T parameter in PID regulation versions."""
+
+    mode = MeasureMode.cmiPID_T
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="T")
+
+@dataclass(init=False)
+class PID_dt(PID):
+    """The dt parameter in PID regulation versions."""
+
+    mode = MeasureMode.cmiPID_dt
+
+    def __init__(self, version, int_val, double_val):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="dt")
+
+@dataclass
+class ExternalInput(DataPackage):
+    """
+    External user input transfered to the wavemeter (64 possible). Meant to control wavemeter via a client.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    external_input : float
+        External input.
+    """
+
+    mode = MeasureMode.cmiExternalInput
+
+    timestamp: int
+    external_input: Decimal
+
+    def __init__(self, version, int_val, double_val):
+        self.product_id = version
+        self.timestamp = int_val
+        self.external_input = Decimal(double_val)
+
+    def __str__(self):
+        return f"External input measurement: {self.external_input} Arb.U.? |
+                 timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+@dataclass
+class DevitationSensitivityFactor(DataPackage):
+    """
+    Sensitivity prefactor in Laser and PID versions.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    devitation_sensitivity_factor : float
+        Devitation sensitivity factor.
+    """
+
+    mode = MeasureMode.cmiDevitationSensitivityFactor
+
+    timestamp: int
+    devitation_sensitivity_factor: Decimal
+
+    def __init__(self, version, int_val, double_val):
+        self.product_id = version
+        self.timestamp = int_val
+        self.devitation_sensitivity_factor = Decimal(double_val)
+
+    def __str__(self):
+        return f"Devitation sensitivity factor measurement: {self.devitation_sensitivity_factor} Arb.U.? |
+                 timestamp {self.timestamp} | wavemeter {self.product_id}."
