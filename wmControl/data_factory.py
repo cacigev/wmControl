@@ -4,10 +4,14 @@ from typing import Type
 
 from wmControl.wlmConst import DataPackage, MeasureMode
 #330
+# DblVal imports
 from wmControl.wlmConst import Wavelength1, Wavelength2, Wavelength3, Wavelength4, Wavelength5, Wavelength6, Wavelength7, Wavelength8
 from wmControl.wlmConst import Temperature, Distance, Linewidth, AnalogIn, AnalogOut
 from wmControl.wlmConst import PID_P, PID_I, PID_D, PID_T, PID_dt
 from wmControl.wlmConst import ExternalInput, DevitationSensitivityFactor
+# IntVal imports
+from wmControl.wlmConst import FastMode, WideMode, ResultMode, ExposureMode, PulseMode, DisplayMode, AnalysisMode, SwitcherMode
+from wmControl.wlmConst import Reduced, Range, Link, Operation, SwitcherChannel, PIDCourse, DeviationSensitivityDim
 from wmControl.wlmConst import Min1, Min11, Min12, Min13, Min14, Min15, Min16, Min17, Min18, Min19
 from wmControl.wlmConst import Max1, Max11, Max12, Max13, Max14, Max15, Max16, Max17, Max18, Max19
 from wmControl.wlmConst import Avg1, Avg11, Avg12, Avg13, Avg14, Avg15, Avg16, Avg17, Avg18, Avg19
@@ -45,6 +49,7 @@ class DataTypeFactory:
 
 data_factory = DataTypeFactory()
 
+# DblVal
 data_factory.register(Wavelength1)
 data_factory.register(Wavelength2)
 data_factory.register(Wavelength3)
@@ -65,6 +70,22 @@ data_factory.register(PID_T)
 data_factory.register(PID_dt)
 data_factory.register(ExternalInput)
 data_factory.register(DevitationSensitivityFactor)
+#
+data_factory.register(FastMode)
+data_factory.register(WideMode)
+data_factory.register(ResultMode)
+data_factory.register(ExposureMode)
+data_factory.register(PulseMode)
+data_factory.register(DisplayMode)
+data_factory.register(AnalysisMode)
+data_factory.register(SwitcherMode)
+data_factory.register(Reduced)
+data_factory.register(Range)
+data_factory.register(Link)
+data_factory.register(SwitcherChannel)
+data_factory.register(PIDCourse)
+data_factory.register(DeviationSensitivityDim)
+#
 data_factory.register(Min1)
 data_factory.register(Min11)
 data_factory.register(Min12)

@@ -995,7 +995,7 @@ class FastMode(DataPackage):
     product_id : int
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     fast_mode_state : int
-        Fast mode state of the wavemeter. Attribute may 0 or 1. If 1 it means fast mode is active.
+        Fast mode state of the wavemeter. Attribute may 0 or 1. 1 means fast mode is active.
     """
 
     mode = MeasureMode.cmiFastMode
@@ -1015,7 +1015,7 @@ class WideMode(DataPackage):
     product_id : int
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     wide_mode_state : int
-        Fast mode state of the wavemeter. Attribute may 0 or 1. If 1 it means fast mode is active.
+        Wide mode state of the wavemeter. Attribute may 0, 1 or 2. 1 represent wide mode. 2 represent grating analysis.
     """
 
     mode = MeasureMode.cmiWideMode
@@ -1023,7 +1023,269 @@ class WideMode(DataPackage):
     wide_mode_state: int
 
     def __str__(self):
-        return f"Wide mode: {self.wide_mode_state} | wavemeter {self.product_id}."
+        return f"Wide mode: mode {self.wide_mode_state} | wavemeter {self.product_id}."
+
+@dataclass
+class ResultMode(DataPackage):
+    """
+    Result mode represent the measurment unit.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    unit : int
+        Unit of the measurement.
+    """
+
+    mode = MeasureMode.cmiResultMode
+
+    unit: int
+
+    def __str__(self):
+        return f"Result mode: unit {self.unit} | wavemeter {self.product_id}."
+
+@dataclass
+class ExposureMode(DataPackage):
+    """
+    Exposure mode gives hint about automatic exposure control.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    exposure_control : int
+        State of the automatic exposure control. Either 0 or 1. 1 if automatic control is active.
+    """
+
+    mode = MeasureMode.cmiExposureMode
+
+    exposure_control: int
+
+    def __str__(self):
+        return f"Automatic exposure control active: bool({self.unit}) | wavemeter {self.product_id}."
+
+@dataclass
+class Range(DataPackage):
+    """
+    Range represent the range in wich the wavemeter is operating.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    range : int
+        Measurement range of the wavemeter.
+    """
+
+    mode = MeasureMode.cmiRange
+
+    range: int
+
+    def __str__(self):
+        return f"Wavemeter range: range {self.range} | wavemeter {self.product_id}."
+
+@dataclass
+class PulseMode(DataPackage):
+    """
+    Pulse mode represent the pulse mode setting.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    pulse_mode : int
+        Puls mode of the wavemeter. Either 0, 1 or 2. 0 is continuous mode, 1 is standard, sigle and internally triggered pulsed mode and
+        2 is double and externally triggered pulsed mode.
+    """
+
+    mode = MeasureMode.cmiPulseMode
+
+    pulse_mode: int
+
+    def __str__(self):
+        return f"Pulse mode: mode {self.pulse_mode} | wavemeter {self.product_id}."
+
+@dataclass
+class DisplayMode(DataPackage):
+    """
+    Represents the display mode settings.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    display_mode : int
+        Display mode settings. Either 0 or 1. 1 if the the signal are to be drawn.
+    """
+
+    mode = MeasureMode.cmiDisplayMode
+
+    display_mode: int
+
+    def __str__(self):
+        return f"Display mode: mode {self.display_mode} | wavemeter {self.product_id}."
+
+@dataclass
+class Reduced(DataPackage):
+    """
+    Represents the reduction state.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    reduction_state : int
+        Reduction state. 1 if reduction is active.
+    """
+
+    mode = MeasureMode.cmiReduced
+
+    reduction_state: int
+
+    def __str__(self):
+        return f"Reduction state: state {bool(self.reduction_state)} | wavemeter {self.product_id}."
+
+@dataclass
+class Link(DataPackage):
+    """
+    Represents the link state with a COM port.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    link_state : int
+        Link state with a COM port. If the wavemeter is connected with a COM port this 1 else 0.
+    """
+
+    mode = MeasureMode.cmiLink
+
+    link_state: int
+
+    def __str__(self):
+        return f"Link state: connected to COM port {bool(self.link_state)} | wavemeter {self.product_id}."
+
+@dataclass
+class Operation(DataPackage):
+    """
+    Represent the operation state the wavemeter has.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    operation_state : OperationMode
+        Operation state of the wavemeter. cAdjustment means the wavemeter is adjusting,
+        cMeasurement means it is measuring, recording or replaying else cStop.
+    """
+
+    mode = MeasureMode.cmiOperation
+
+    operation_state: int
+
+    def __str__(self):
+        return f"Operation state: state {self.operation_state} | wavemeter {self.product_id}."
+
+@dataclass
+class AnalysisMode(DataPackage):
+    """
+    Represent the analysis mode state.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    analysis_state : int
+        Analysis mode of the wavemeter. Either 0 or 1. 1 if analysis mode is active.
+    """
+
+    mode = MeasureMode.cmiAnalysisMode
+
+    analysis_state: int
+
+    def __str__(self):
+        return f"Analysis mode state: state {bool(self.analysis_state)} | wavemeter {self.product_id}."
+
+@dataclass
+class SwitcherMode(DataPackage):
+    """
+    Represent the switcher mode state.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    switcher_state : int
+        Switcher mode of the wavemeter. Either 0 or 1. 1 if switcher mode is active.
+    """
+
+    mode = MeasureMode.cmiSwitcherMode
+
+    switcher_state: int
+
+    def __str__(self):
+        return f"Switcher mode state: state {bool(self.switcher_state)} | wavemeter {self.product_id}."
+
+@dataclass
+class SwitcherChannel(DataPackage):
+    """
+    Represent the current active switcher channel.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    active_switcher_channel : int
+        Active switcher channel of the wavemeter.
+    """
+
+    mode = MeasureMode.cmiSwitcherChannel
+
+    active_switcher_channel: int
+
+    def __str__(self):
+        return f"Active switcher channel: channel {self.active_switcher_channel} | wavemeter {self.product_id}."
+
+@dataclass
+class PIDCourse(DataPackage):
+    """
+    Represent the current active switcher channel.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    pid_course_state : ResultErrorMode
+        State of the PID course. Either ResERR_NoErr, ResERR_WlmMissing or ResERR_ParmOutOfRange.
+    """
+
+    mode = MeasureMode.cmiPIDCourse
+
+    pid_course_state: int
+
+    def __str__(self):
+        return f"PID course state: state {self.pid_course_state} | wavemeter {self.product_id}."
+
+@dataclass
+class DeviationSensitivityDim(DataPackage):
+    """
+    Represent the dimension of the .
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    dimension : int
+        Dimension of the sensitivty of the deviation.
+    """
+
+    mode = MeasureMode.cmiDeviationSensitivityDim
+
+    dimension: int
+
+    def __str__(self):
+        return f"Deviation sensitivity: dimension {self.dimension} | wavemeter {self.product_id}."
 
 @dataclass
 class Min(DataPackage):
