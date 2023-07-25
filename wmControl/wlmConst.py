@@ -810,7 +810,7 @@ class Distance(DataPackage):
 @dataclass
 class Linewidth(DataPackage):
     """
-    The calculated Linewidth in nm.
+    The calculated linewidth in nm.
 
     Attributes
     ----------
@@ -818,17 +818,17 @@ class Linewidth(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    linewidth : float
-        Linewidth in nm.
+    value : Decimal
+        linewidth in nm.
     """
 
     mode = MeasureMode.cmiLinewidth
 
     timestamp: int
-    linewidth: Decimal
+    value: Decimal
 
     def __str__(self):
-        return f"Linewidth measurement: {self.linewidth} nm | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        return f"Linewidth measurement: {self.value} nm | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
 @dataclass
@@ -978,7 +978,7 @@ class ExternalInput(DataPackage):
 
 
 @dataclass
-class DevitationSensitivityFactor(DataPackage):
+class DeviationSensitivityFactor(DataPackage):
     """
     Sensitivity prefactor in Laser and PID versions.
 
@@ -988,17 +988,17 @@ class DevitationSensitivityFactor(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    devitation_sensitivity_factor : float
-        Devitation sensitivity factor.
+    value : float
+        Deviation sensitivity factor.
     """
 
     mode = MeasureMode.cmiDeviationSensitivityFactor
 
     timestamp: int
-    devitation_sensitivity_factor: Decimal
+    value: Decimal
 
     def __str__(self):
-        return f"Devitation sensitivity factor measurement: {self.devitation_sensitivity_factor} Arb.U. | \
+        return f"Devitation sensitivity factor measurement: {self.value} Arb.U. | \
                  timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
@@ -1052,7 +1052,7 @@ class WideMode(DataPackage):
 @dataclass
 class ResultMode(DataPackage):
     """
-    Result mode represent the measurment unit.
+    Result mode represent the measurement unit.
 
     Attributes
     ----------
