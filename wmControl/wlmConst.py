@@ -983,6 +983,7 @@ class DevitationSensitivityFactor(DataPackage):
 
 #######################################################################################################################
 # Dataclasses for cmi with meaning for IntVal. For more see manual page 61.
+# Use documentation with caution.
 
 @dataclass
 class FastMode(DataPackage):
@@ -1004,6 +1005,25 @@ class FastMode(DataPackage):
     def __str__(self):
         return f"Fast mode active: {bool(self.fast_mode_state)} | wavemeter {self.product_id}."
 
+@dataclass
+class WideMode(DataPackage):
+    """
+    Wide mode represent the measurement precision mode indicator.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    wide_mode_state : int
+        Fast mode state of the wavemeter. Attribute may 0 or 1. If 1 it means fast mode is active.
+    """
+
+    mode = MeasureMode.cmiWideMode
+
+    wide_mode_state: int
+
+    def __str__(self):
+        return f"Wide mode: {self.wide_mode_state} | wavemeter {self.product_id}."
 
 @dataclass
 class Min(DataPackage):
@@ -1043,7 +1063,7 @@ class Min1(Min):
 class Min2(Min):
     """The interference pattern minimum of channel 1 for second ccd."""
 
-    mode = MeasureMode.cmiMin1
+    mode = MeasureMode.cmiMin2
 
     def __init__(self, version, int_val):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=1, ccd_array=2)
@@ -1121,6 +1141,15 @@ class Min18(Min):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=1)
 
 @dataclass(init=False)
+class Min19(Min):
+    """The interference pattern minimum of some channel for first ccd."""
+
+    mode = MeasureMode.cmiMin19
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=1)
+
+@dataclass(init=False)
 class Min21(Min):
     """The interference pattern minimum of channel 1 for second ccd."""
 
@@ -1192,6 +1221,15 @@ class Min28(Min):
     def __init__(self, version, int_val):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=2)
 
+@dataclass(init=False)
+class Min29(Min):
+    """The interference pattern minimum of some channel for second ccd."""
+
+    mode = MeasureMode.cmiMin29
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=2)
+
 @dataclass
 class Max(DataPackage):
     """
@@ -1230,7 +1268,7 @@ class Max1(Max):
 class Max2(Max):
     """The interference pattern maximum of channel 1 for second ccd."""
 
-    mode = MeasureMode.cmiMax1
+    mode = MeasureMode.cmiMax2
 
     def __init__(self, version, int_val):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=1, ccd_array=2)
@@ -1308,6 +1346,15 @@ class Max18(Max):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=1)
 
 @dataclass(init=False)
+class Max19(Max):
+    """The interference pattern maximum of some channel for first ccd."""
+
+    mode = MeasureMode.cmiMax19
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=1)
+
+@dataclass(init=False)
 class Max21(Max):
     """The interference pattern maximum of channel 1 for second ccd."""
 
@@ -1379,6 +1426,15 @@ class Max28(Max):
     def __init__(self, version, int_val):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=2)
 
+@dataclass(init=False)
+class Max29(Max):
+    """The interference pattern maximum of some channel for second ccd."""
+
+    mode = MeasureMode.cmiMax29
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=2)
+
 @dataclass
 class Avg(DataPackage):
     """
@@ -1405,19 +1461,19 @@ class Avg(DataPackage):
         return f"Average measurement: {self.average} Arb.U. | channel {self.channel} | ccd {self.ccd_array} | wavemeter {self.product_id}."
 
 @dataclass(init=False)
-class Min1(Min):
+class Avg1(Avg):
     """The interference pattern average of channel 1 for first ccd."""
 
-    mode = MeasureMode.cmiMin1
+    mode = MeasureMode.cmiPatternAvg1
 
     def __init__(self, version, int_val):
         super().__init__(product_id=version, average=Decimal(int_val), channel=1, ccd_array=1)
 
 @dataclass(init=False)
-class Min2(Min):
+class Avg2(Avg):
     """The interference pattern average of channel 1 for second ccd."""
 
-    mode = MeasureMode.cmiMin1
+    mode = MeasureMode.cmiPatternAvg2
 
     def __init__(self, version, int_val):
         super().__init__(product_id=version, average=Decimal(int_val), channel=1, ccd_array=2)
@@ -1495,6 +1551,15 @@ class Avg18(Avg):
         super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=1)
 
 @dataclass(init=False)
+class Avg19(Avg):
+    """The interference pattern average of some channel for first ccd."""
+
+    mode = MeasureMode.cmiAvg19
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=1)
+
+@dataclass(init=False)
 class Avg21(Avg):
     """The interference pattern average of channel 1 for second ccd."""
 
@@ -1565,3 +1630,200 @@ class Avg28(Avg):
 
     def __init__(self, version, int_val):
         super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=2)
+
+@dataclass(init=False)
+class Avg29(Avg):
+    """The interference pattern average of some channel for second ccd."""
+
+    mode = MeasureMode.cmiAvg29
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=2)
+
+@dataclass
+class Exposure(DataPackage):
+    """
+    The actual valid exposure value on a channel. For wavemeter with two ccds there will be two averages. See also manual
+    page 90 GetExposureNum. Do not directly instantiate this class. Use a sibling to correctly set the channel and mode enum.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    exposure : Decimal
+        The averages height of the fringes of the interference pattern.
+    channel : int
+        Channel of the wavemeter. The channel is a 0 based index.
+    ccd_array : int
+        Index of the ccd array wich measured the interference pattern.
+    """
+
+    average: Decimal
+    channel: int
+    ccd_array: int
+
+    def __str__(self):
+        return f"Exposure measurement: exposure {self.exposure} Arb.U. | channel {self.channel} | ccd {self.ccd_array} | wavemeter {self.product_id}."
+
+@dataclass(init=False)
+class Exposure1(Exposure):
+    """The exposure of channel 1 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue1
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure2(Exposure):
+    """The exposure of channel 1 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue2
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure11(Exposure):
+    """The exposure of channel 1 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue11
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure12(Exposure):
+    """The exposure of channel 2 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue12
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=2, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure13(Exposure):
+    """The exposure of channel 3 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue13
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=3, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure14(Exposure):
+    """The exposure of channel 4 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue14
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=4, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure15(Exposure):
+    """The exposure of channel 5 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue15
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=5, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure16(Exposure):
+    """The exposure of channel 6 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue16
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=6, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure17(Exposure):
+    """The exposure of channel 7 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue17
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=7, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure18(Exposure):
+    """The exposure of channel 8 for first ccd."""
+
+    mode = MeasureMode.cmiExposureValue18
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=8, ccd_array=1)
+
+@dataclass(init=False)
+class Exposure21(Exposure):
+    """The exposure of channel 1 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue21
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure22(Exposure):
+    """The exposure of channel 2 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue22
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=2, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure23(Exposure):
+    """The exposure of channel 3 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue23
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=3, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure24(Exposure):
+    """The exposure of channel 4 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue24
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=4, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure25(Exposure):
+    """The exposure of channel 5 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue25
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=5, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure26(Exposure):
+    """The exposure of channel 6 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue26
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=6, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure27(Exposure):
+    """The exposure of channel 7 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue27
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=7, ccd_array=2)
+
+@dataclass(init=False)
+class Exposure28(Exposure):
+    """The exposure of channel 8 for second ccd."""
+
+    mode = MeasureMode.cmiExposureValue28
+
+    def __init__(self, version, int_val):
+        super().__init__(product_id=version, exposure=Decimal(int_val), channel=8, ccd_array=2)
+
