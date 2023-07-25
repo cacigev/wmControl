@@ -15,12 +15,6 @@ class DataTypeFactory:
     class object.
     """
 
-    __registered_data_types: dict[MeasureMode, Type[DataPackage]] = {} 
-    """ 
-    ???? Ohne diese Zeile feuert er 
-    AttributeError: type object 'DataTypeFactory' has no attribute '_DataTypeFactory__registered_data_types'
-    """
-
     def __init__(self):
         self.__registered_data_types: dict[MeasureMode, Type[DataPackage]] = {}
 
@@ -62,3 +56,5 @@ data_factory.register(PID_T)
 data_factory.register(PID_dt)
 data_factory.register(ExternalInput)
 data_factory.register(DevitationSensitivityFactor)
+
+#print(data_factory._DataTypeFactory__registered_data_types)
