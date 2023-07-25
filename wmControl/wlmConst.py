@@ -842,17 +842,17 @@ class AnalogIn(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    analog_input : float
+    value : Decimal
         Analog input in volt.
     """
 
     mode = MeasureMode.cmiAnalogIn
 
     timestamp: int
-    analog_input: Decimal
+    value: Decimal
 
     def __str__(self):
-        return f"Analog input measurement: {self.analog_input} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        return f"Analog input measurement: {self.value} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
 @dataclass
