@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from decimal import Decimal
 from enum import IntEnum
 
-
 # Instantiating Constants for 'RFC' parameter
 cInstCheckForWLM = -1
 cInstResetCalc = 0
@@ -640,11 +639,12 @@ cFileParameterError = -1
 
 @dataclass
 class DataPackage:
-    mode: MeasureMode
     product_id: int
+
 
 #######################################################################################################################
 # dataclasses for cmi with meaning for DblVal. For more see manual page 61.
+
 
 @dataclass
 class Wavelength(DataPackage):
@@ -665,21 +665,21 @@ class Wavelength(DataPackage):
     """
 
     timestamp: int
-    wavelength: Decimal
+    value: Decimal
     channel: int
 
     def __str__(self):
-        return f"Wavelength measurement: {self.wavelength} nm | timestamp {self.timestamp} | channel {self.channel} | wavemeter {self.product_id}."
+        return f"Wavelength measurement: {self.value} nm | timestamp {self.timestamp} | channel {self.channel} | wavemeter {self.product_id}."
 
 
 @dataclass(init=False)
 class Wavelength1(Wavelength):
     """Wavelength CH1"""
 
-    mode = MeasureMode.cmiWavelength1
+    mode: MeasureMode = MeasureMode.cmiWavelength1
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=0)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=0)
 
 
 @dataclass(init=False)
@@ -688,8 +688,8 @@ class Wavelength2(Wavelength):
 
     mode = MeasureMode.cmiWavelength2
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=1)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=1)
 
 
 @dataclass(init=False)
@@ -698,8 +698,8 @@ class Wavelength3(Wavelength):
 
     mode = MeasureMode.cmiWavelength3
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=2)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=2)
 
 
 @dataclass(init=False)
@@ -708,8 +708,8 @@ class Wavelength4(Wavelength):
 
     mode = MeasureMode.cmiWavelength4
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=3)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=3)
 
 
 @dataclass(init=False)
@@ -718,8 +718,8 @@ class Wavelength5(Wavelength):
 
     mode = MeasureMode.cmiWavelength5
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=4)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=4)
 
 
 @dataclass(init=False)
@@ -728,8 +728,8 @@ class Wavelength6(Wavelength):
 
     mode = MeasureMode.cmiWavelength6
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=5)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=5)
 
 
 @dataclass(init=False)
@@ -738,8 +738,8 @@ class Wavelength7(Wavelength):
 
     mode = MeasureMode.cmiWavelength7
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=6)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=6)
 
 
 @dataclass(init=False)
@@ -748,13 +748,14 @@ class Wavelength8(Wavelength):
 
     mode = MeasureMode.cmiWavelength8
 
-    def __init__(self, version, int_val, double_val):
-        super().__init__(product_id=version, timestamp=int_val, wavelength=Decimal(double_val), channel=7)
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), channel=7)
 
-@dataclass
+
+@dataclass(init=False)
 class Temperature(DataPackage):
     """
-    The measured Temperature in Celsius.
+    The internal temperature in Celsius.
 
     Attributes
     ----------
@@ -762,17 +763,23 @@ class Temperature(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    temperature : float
-        Measured temperature in celsius.
+    value : Decimal
+        Measured temperature in Celsius.
     """
 
     mode = MeasureMode.cmiTemperature
 
     timestamp: int
-    temperature: Decimal
+    value: Decimal
+
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
 
     def __str__(self):
-        return f"Temperature measurement: {self.temperature} C | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        return f"Temperature measurement: {self.value} °C | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
 
 @dataclass
 class Distance(DataPackage):
@@ -795,7 +802,10 @@ class Distance(DataPackage):
     distance: Decimal
 
     def __str__(self):
-        return f"Distance measurement: {self.distance} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        return (
+            f"Distance measurement: {self.distance} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        )
+
 
 @dataclass
 class Linewidth(DataPackage):
@@ -820,6 +830,7 @@ class Linewidth(DataPackage):
     def __str__(self):
         return f"Linewidth measurement: {self.linewidth} nm | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
+
 @dataclass
 class AnalogIn(DataPackage):
     """
@@ -842,6 +853,7 @@ class AnalogIn(DataPackage):
 
     def __str__(self):
         return f"Analog input measurement: {self.analog_input} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
 
 @dataclass
 class AnalogOut(DataPackage):
@@ -866,6 +878,7 @@ class AnalogOut(DataPackage):
     def __str__(self):
         return f"Analog output measurement: {self.analog_output} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
+
 @dataclass
 class PID(DataPackage):
     """
@@ -888,6 +901,7 @@ class PID(DataPackage):
     def __str__(self):
         return f"PID measurement: {self.value} Arb.U. | timestamp {self.timestamp} | parameter {self.parameter} | wavemeter {self.product_id}."
 
+
 @dataclass(init=False)
 class PID_P(PID):
     """The P parameter in PID regulation versions."""
@@ -896,6 +910,7 @@ class PID_P(PID):
 
     def __init__(self, version, int_val, double_val):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="P")
+
 
 @dataclass(init=False)
 class PID_I(PID):
@@ -906,6 +921,7 @@ class PID_I(PID):
     def __init__(self, version, int_val, double_val):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="I")
 
+
 @dataclass(init=False)
 class PID_D(PID):
     """The D parameter in PID regulation versions."""
@@ -914,6 +930,7 @@ class PID_D(PID):
 
     def __init__(self, version, int_val, double_val):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="D")
+
 
 @dataclass(init=False)
 class PID_T(PID):
@@ -924,6 +941,7 @@ class PID_T(PID):
     def __init__(self, version, int_val, double_val):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="T")
 
+
 @dataclass(init=False)
 class PID_dt(PID):
     """The dt parameter in PID regulation versions."""
@@ -932,6 +950,7 @@ class PID_dt(PID):
 
     def __init__(self, version, int_val, double_val):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="dt")
+
 
 @dataclass
 class ExternalInput(DataPackage):
@@ -957,6 +976,7 @@ class ExternalInput(DataPackage):
         return f"External input measurement: {self.external_input} Arb.U. | \
                  timestamp {self.timestamp} | wavemeter {self.product_id}."
 
+
 @dataclass
 class DevitationSensitivityFactor(DataPackage):
     """
@@ -981,9 +1001,11 @@ class DevitationSensitivityFactor(DataPackage):
         return f"Devitation sensitivity factor measurement: {self.devitation_sensitivity_factor} Arb.U. | \
                  timestamp {self.timestamp} | wavemeter {self.product_id}."
 
+
 #######################################################################################################################
 # Dataclasses for cmi with meaning for IntVal. For more see manual page 61.
 # Use documentation with caution.
+
 
 @dataclass
 class FastMode(DataPackage):
@@ -1005,6 +1027,7 @@ class FastMode(DataPackage):
     def __str__(self):
         return f"Fast mode active: {bool(self.fast_mode_state)} | wavemeter {self.product_id}."
 
+
 @dataclass
 class WideMode(DataPackage):
     """
@@ -1024,6 +1047,7 @@ class WideMode(DataPackage):
 
     def __str__(self):
         return f"Wide mode: mode {self.wide_mode_state} | wavemeter {self.product_id}."
+
 
 @dataclass
 class ResultMode(DataPackage):
@@ -1045,6 +1069,7 @@ class ResultMode(DataPackage):
     def __str__(self):
         return f"Result mode: unit {self.unit} | wavemeter {self.product_id}."
 
+
 @dataclass
 class ExposureMode(DataPackage):
     """
@@ -1065,6 +1090,7 @@ class ExposureMode(DataPackage):
     def __str__(self):
         return f"Automatic exposure control active: bool({self.unit}) | wavemeter {self.product_id}."
 
+
 @dataclass
 class Range(DataPackage):
     """
@@ -1084,6 +1110,7 @@ class Range(DataPackage):
 
     def __str__(self):
         return f"Wavemeter range: range {self.range} | wavemeter {self.product_id}."
+
 
 @dataclass
 class PulseMode(DataPackage):
@@ -1106,6 +1133,7 @@ class PulseMode(DataPackage):
     def __str__(self):
         return f"Pulse mode: mode {self.pulse_mode} | wavemeter {self.product_id}."
 
+
 @dataclass
 class DisplayMode(DataPackage):
     """
@@ -1125,6 +1153,7 @@ class DisplayMode(DataPackage):
 
     def __str__(self):
         return f"Display mode: mode {self.display_mode} | wavemeter {self.product_id}."
+
 
 @dataclass
 class Reduced(DataPackage):
@@ -1146,6 +1175,7 @@ class Reduced(DataPackage):
     def __str__(self):
         return f"Reduction state: state {bool(self.reduction_state)} | wavemeter {self.product_id}."
 
+
 @dataclass
 class Link(DataPackage):
     """
@@ -1165,6 +1195,7 @@ class Link(DataPackage):
 
     def __str__(self):
         return f"Link state: connected to COM port {bool(self.link_state)} | wavemeter {self.product_id}."
+
 
 @dataclass
 class Operation(DataPackage):
@@ -1187,6 +1218,7 @@ class Operation(DataPackage):
     def __str__(self):
         return f"Operation state: state {self.operation_state} | wavemeter {self.product_id}."
 
+
 @dataclass
 class AnalysisMode(DataPackage):
     """
@@ -1206,6 +1238,7 @@ class AnalysisMode(DataPackage):
 
     def __str__(self):
         return f"Analysis mode state: state {bool(self.analysis_state)} | wavemeter {self.product_id}."
+
 
 @dataclass
 class SwitcherMode(DataPackage):
@@ -1227,7 +1260,8 @@ class SwitcherMode(DataPackage):
     def __str__(self):
         return f"Switcher mode state: state {bool(self.switcher_state)} | wavemeter {self.product_id}."
 
-@dataclass
+
+@dataclass(init=False)
 class SwitcherChannel(DataPackage):
     """
     Represent the current active switcher channel.
@@ -1236,16 +1270,20 @@ class SwitcherChannel(DataPackage):
     ----------
     product_id : int
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
-    active_switcher_channel : int
+    value : int
         Active switcher channel of the wavemeter.
     """
 
     mode = MeasureMode.cmiSwitcherChannel
+    value: int
 
-    active_switcher_channel: int
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
 
     def __str__(self):
-        return f"Active switcher channel: channel {self.active_switcher_channel} | wavemeter {self.product_id}."
+        return f"Active switcher channel: channel {self.value} | wavemeter {self.product_id}."
+
 
 @dataclass
 class PIDCourse(DataPackage):
@@ -1267,6 +1305,7 @@ class PIDCourse(DataPackage):
     def __str__(self):
         return f"PID course state: state {self.pid_course_state} | wavemeter {self.product_id}."
 
+
 @dataclass
 class DeviationSensitivityDim(DataPackage):
     """
@@ -1286,6 +1325,7 @@ class DeviationSensitivityDim(DataPackage):
 
     def __str__(self):
         return f"Deviation sensitivity: dimension {self.dimension} | wavemeter {self.product_id}."
+
 
 @dataclass
 class Min(DataPackage):
@@ -1312,185 +1352,206 @@ class Min(DataPackage):
     def __str__(self):
         return f"Minimum measurement: {self.minimum} Arb.U. | channel {self.channel} | ccd {self.ccd_array} | wavemeter {self.product_id}."
 
+
 @dataclass(init=False)
 class Min1(Min):
-    """The interference pattern minimum of channel 1 for first ccd."""
+    """The interference pattern minimum of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiMin1
 
     def __init__(self, version, int_val):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=1, ccd_array=1)
 
+
 @dataclass(init=False)
 class Min2(Min):
-    """The interference pattern minimum of channel 1 for second ccd."""
+    """The interference pattern minimum of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiMin2
 
     def __init__(self, version, int_val):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=1, ccd_array=2)
 
+
 @dataclass(init=False)
 class Min11(Min):
-    """The interference pattern minimum of channel 1 for first ccd."""
+    """The interference pattern minimum of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiMin11
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=1, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min12(Min):
-    """The interference pattern minimum of channel 2 for first ccd."""
+    """The interference pattern minimum of channel 2 for first CCD."""
 
     mode = MeasureMode.cmiMin12
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=2, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min13(Min):
-    """The interference pattern minimum of channel 3 for first ccd."""
+    """The interference pattern minimum of channel 3 for first CCD."""
 
     mode = MeasureMode.cmiMin13
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=3, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min14(Min):
-    """The interference pattern minimum of channel 4 for first ccd."""
+    """The interference pattern minimum of channel 4 for first CCD."""
 
     mode = MeasureMode.cmiMin14
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=4, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min15(Min):
-    """The interference pattern minimum of channel 5 for first ccd."""
+    """The interference pattern minimum of channel 5 for first CCD."""
 
     mode = MeasureMode.cmiMin15
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=5, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min16(Min):
-    """The interference pattern minimum of channel 6 for first ccd."""
+    """The interference pattern minimum of channel 6 for first CCD."""
 
     mode = MeasureMode.cmiMin16
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=6, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min17(Min):
-    """The interference pattern minimum of channel 7 for first ccd."""
+    """The interference pattern minimum of channel 7 for first CCD."""
 
     mode = MeasureMode.cmiMin17
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=7, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min18(Min):
-    """The interference pattern minimum of channel 8 for first ccd."""
+    """The interference pattern minimum of channel 8 for first CCD."""
 
     mode = MeasureMode.cmiMin18
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min19(Min):
-    """The interference pattern minimum of some channel for first ccd."""
+    """The interference pattern minimum of some channel for first CCD."""
 
     mode = MeasureMode.cmiMin19
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=1)
+
 
 @dataclass(init=False)
 class Min21(Min):
-    """The interference pattern minimum of channel 1 for second ccd."""
+    """The interference pattern minimum of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiMin21
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=1, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min22(Min):
-    """The interference pattern minimum of channel 2 for second ccd."""
+    """The interference pattern minimum of channel 2 for second CCD."""
 
     mode = MeasureMode.cmiMin22
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=2, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min23(Min):
-    """The interference pattern minimum of channel 3 for second ccd."""
+    """The interference pattern minimum of channel 3 for second CCD."""
 
     mode = MeasureMode.cmiMin23
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=3, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min24(Min):
-    """The interference pattern minimum of channel 4 for second ccd."""
+    """The interference pattern minimum of channel 4 for second CCD."""
 
     mode = MeasureMode.cmiMin24
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=4, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min25(Min):
-    """The interference pattern minimum of channel 5 for second ccd."""
+    """The interference pattern minimum of channel 5 for second CCD."""
 
     mode = MeasureMode.cmiMin25
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=5, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min26(Min):
-    """The interference pattern minimum of channel 6 for second ccd."""
+    """The interference pattern minimum of channel 6 for second CCD."""
 
     mode = MeasureMode.cmiMin26
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=6, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min27(Min):
-    """The interference pattern minimum of channel 7 for second ccd."""
+    """The interference pattern minimum of channel 7 for second CCD."""
 
     mode = MeasureMode.cmiMin27
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=7, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min28(Min):
-    """The interference pattern minimum of channel 8 for second ccd."""
+    """The interference pattern minimum of channel 8 for second CCD."""
 
     mode = MeasureMode.cmiMin28
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=2)
+
 
 @dataclass(init=False)
 class Min29(Min):
-    """The interference pattern minimum of some channel for second ccd."""
+    """The interference pattern minimum of some channel for second CCD."""
 
     mode = MeasureMode.cmiMin29
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, minimum=Decimal(int_val), channel=8, ccd_array=2)
+
 
 @dataclass
 class Max(DataPackage):
@@ -1517,185 +1578,206 @@ class Max(DataPackage):
     def __str__(self):
         return f"Maximum measurement: {self.maximum} Arb.U. | channel {self.channel} | ccd {self.ccd_array} | wavemeter {self.product_id}."
 
+
 @dataclass(init=False)
 class Max1(Max):
-    """The interference pattern maximum of channel 1 for first ccd."""
+    """The interference pattern maximum of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiMax1
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=1, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max2(Max):
-    """The interference pattern maximum of channel 1 for second ccd."""
+    """The interference pattern maximum of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiMax2
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=1, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max11(Max):
-    """The interference pattern maximum of channel 1 for first ccd."""
+    """The interference pattern maximum of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiMax11
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=1, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max12(Max):
-    """The interference pattern maximum of channel 2 for first ccd."""
+    """The interference pattern maximum of channel 2 for first CCD."""
 
     mode = MeasureMode.cmiMax12
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=2, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max13(Max):
-    """The interference pattern maximum of channel 3 for first ccd."""
+    """The interference pattern maximum of channel 3 for first CCD."""
 
     mode = MeasureMode.cmiMax13
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=3, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max14(Max):
-    """The interference pattern maximum of channel 4 for first ccd."""
+    """The interference pattern maximum of channel 4 for first CCD."""
 
     mode = MeasureMode.cmiMax14
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=4, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max15(Max):
-    """The interference pattern maximum of channel 5 for first ccd."""
+    """The interference pattern maximum of channel 5 for first CCD."""
 
     mode = MeasureMode.cmiMax15
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=5, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max16(Max):
-    """The interference pattern maximum of channel 6 for first ccd."""
+    """The interference pattern maximum of channel 6 for first CCD."""
 
     mode = MeasureMode.cmiMax16
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=6, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max17(Max):
-    """The interference pattern maximum of channel 7 for first ccd."""
+    """The interference pattern maximum of channel 7 for first CCD."""
 
     mode = MeasureMode.cmiMax17
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=7, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max18(Max):
-    """The interference pattern maximum of channel 8 for first ccd."""
+    """The interference pattern maximum of channel 8 for first CCD."""
 
     mode = MeasureMode.cmiMax18
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max19(Max):
-    """The interference pattern maximum of some channel for first ccd."""
+    """The interference pattern maximum of some channel for first CCD."""
 
     mode = MeasureMode.cmiMax19
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=1)
+
 
 @dataclass(init=False)
 class Max21(Max):
-    """The interference pattern maximum of channel 1 for second ccd."""
+    """The interference pattern maximum of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiMax21
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=1, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max22(Max):
-    """The interference pattern maximum of channel 2 for second ccd."""
+    """The interference pattern maximum of channel 2 for second CCD."""
 
     mode = MeasureMode.cmiMax22
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=2, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max23(Max):
-    """The interference pattern maximum of channel 3 for second ccd."""
+    """The interference pattern maximum of channel 3 for second CCD."""
 
     mode = MeasureMode.cmiMax23
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=3, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max24(Max):
-    """The interference pattern maximum of channel 4 for second ccd."""
+    """The interference pattern maximum of channel 4 for second CCD."""
 
     mode = MeasureMode.cmiMax24
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=4, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max25(Max):
-    """The interference pattern maximum of channel 5 for second ccd."""
+    """The interference pattern maximum of channel 5 for second CCD."""
 
     mode = MeasureMode.cmiMax25
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=5, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max26(Max):
-    """The interference pattern maximum of channel 6 for second ccd."""
+    """The interference pattern maximum of channel 6 for second CCD."""
 
     mode = MeasureMode.cmiMax26
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=6, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max27(Max):
-    """The interference pattern maximum of channel 7 for second ccd."""
+    """The interference pattern maximum of channel 7 for second CCD."""
 
     mode = MeasureMode.cmiMax27
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=7, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max28(Max):
-    """The interference pattern maximum of channel 8 for second ccd."""
+    """The interference pattern maximum of channel 8 for second CCD."""
 
     mode = MeasureMode.cmiMax28
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=2)
+
 
 @dataclass(init=False)
 class Max29(Max):
-    """The interference pattern maximum of some channel for second ccd."""
+    """The interference pattern maximum of some channel for second CCD."""
 
     mode = MeasureMode.cmiMax29
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, maximum=Decimal(int_val), channel=8, ccd_array=2)
+
 
 @dataclass
 class Avg(DataPackage):
@@ -1722,190 +1804,211 @@ class Avg(DataPackage):
     def __str__(self):
         return f"Average measurement: {self.average} Arb.U. | channel {self.channel} | ccd {self.ccd_array} | wavemeter {self.product_id}."
 
+
 @dataclass(init=False)
 class Avg1(Avg):
-    """The interference pattern average of channel 1 for first ccd."""
+    """The interference pattern average of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiPatternAvg1
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=1, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg2(Avg):
-    """The interference pattern average of channel 1 for second ccd."""
+    """The interference pattern average of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiPatternAvg2
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=1, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg11(Avg):
-    """The interference pattern average of channel 1 for first ccd."""
+    """The interference pattern average of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiAvg11
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=1, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg12(Avg):
-    """The interference pattern average of channel 2 for first ccd."""
+    """The interference pattern average of channel 2 for first CCD."""
 
     mode = MeasureMode.cmiAvg12
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=2, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg13(Avg):
-    """The interference pattern average of channel 3 for first ccd."""
+    """The interference pattern average of channel 3 for first CCD."""
 
     mode = MeasureMode.cmiAvg13
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=3, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg14(Avg):
-    """The interference pattern average of channel 4 for first ccd."""
+    """The interference pattern average of channel 4 for first CCD."""
 
     mode = MeasureMode.cmiAvg14
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=4, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg15(Avg):
-    """The interference pattern average of channel 5 for first ccd."""
+    """The interference pattern average of channel 5 for first CCD."""
 
     mode = MeasureMode.cmiAvg15
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=5, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg16(Avg):
-    """The interference pattern average of channel 6 for first ccd."""
+    """The interference pattern average of channel 6 for first CCD."""
 
     mode = MeasureMode.cmiAvg16
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=6, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg17(Avg):
-    """The interference pattern average of channel 7 for first ccd."""
+    """The interference pattern average of channel 7 for first CCD."""
 
     mode = MeasureMode.cmiAvg17
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=7, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg18(Avg):
-    """The interference pattern average of channel 8 for first ccd."""
+    """The interference pattern average of channel 8 for first CCD."""
 
     mode = MeasureMode.cmiAvg18
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg19(Avg):
-    """The interference pattern average of some channel for first ccd."""
+    """The interference pattern average of some channel for first CCD."""
 
     mode = MeasureMode.cmiAvg19
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=1)
+
 
 @dataclass(init=False)
 class Avg21(Avg):
-    """The interference pattern average of channel 1 for second ccd."""
+    """The interference pattern average of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiAvg21
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=1, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg22(Avg):
-    """The interference pattern average of channel 2 for second ccd."""
+    """The interference pattern average of channel 2 for second CCD."""
 
     mode = MeasureMode.cmiAvg22
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=2, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg23(Avg):
-    """The interference pattern average of channel 3 for second ccd."""
+    """The interference pattern average of channel 3 for second CCD."""
 
     mode = MeasureMode.cmiAvg23
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=3, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg24(Avg):
-    """The interference pattern average of channel 4 for second ccd."""
+    """The interference pattern average of channel 4 for second CCD."""
 
     mode = MeasureMode.cmiAvg24
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=4, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg25(Avg):
-    """The interference pattern average of channel 5 for second ccd."""
+    """The interference pattern average of channel 5 for second CCD."""
 
     mode = MeasureMode.cmiAvg25
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=5, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg26(Avg):
-    """The interference pattern average of channel 6 for second ccd."""
+    """The interference pattern average of channel 6 for second CCD."""
 
     mode = MeasureMode.cmiAvg26
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=6, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg27(Avg):
-    """The interference pattern average of channel 7 for second ccd."""
+    """The interference pattern average of channel 7 for second CCD."""
 
     mode = MeasureMode.cmiAvg27
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=7, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg28(Avg):
-    """The interference pattern average of channel 8 for second ccd."""
+    """The interference pattern average of channel 8 for second CCD."""
 
     mode = MeasureMode.cmiAvg28
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=2)
+
 
 @dataclass(init=False)
 class Avg29(Avg):
-    """The interference pattern average of some channel for second ccd."""
+    """The interference pattern average of some channel for second CCD."""
 
     mode = MeasureMode.cmiAvg29
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, average=Decimal(int_val), channel=8, ccd_array=2)
+
 
 @dataclass
 class Exposure(DataPackage):
     """
-    The actual valid exposure value on a channel. For wavemeter with two ccds there will be two averages. See also manual
+    The actual valid exposure value on a channel. For wavemeter with two CCDs there will be two averages. See also manual
     page 90 GetExposureNum. Do not directly instantiate this class. Use a sibling to correctly set the channel and mode enum.
 
     Attributes
@@ -1927,165 +2030,182 @@ class Exposure(DataPackage):
     def __str__(self):
         return f"Exposure measurement: exposure {self.exposure} Arb.U. | channel {self.channel} | ccd {self.ccd_array} | wavemeter {self.product_id}."
 
+
 @dataclass(init=False)
 class Exposure1(Exposure):
-    """The exposure of channel 1 for first ccd."""
+    """The exposure of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue1
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure2(Exposure):
-    """The exposure of channel 1 for second ccd."""
+    """The exposure of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue2
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure11(Exposure):
-    """The exposure of channel 1 for first ccd."""
+    """The exposure of channel 1 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue11
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure12(Exposure):
-    """The exposure of channel 2 for first ccd."""
+    """The exposure of channel 2 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue12
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=2, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure13(Exposure):
-    """The exposure of channel 3 for first ccd."""
+    """The exposure of channel 3 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue13
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=3, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure14(Exposure):
-    """The exposure of channel 4 for first ccd."""
+    """The exposure of channel 4 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue14
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=4, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure15(Exposure):
-    """The exposure of channel 5 for first ccd."""
+    """The exposure of channel 5 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue15
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=5, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure16(Exposure):
-    """The exposure of channel 6 for first ccd."""
+    """The exposure of channel 6 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue16
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=6, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure17(Exposure):
-    """The exposure of channel 7 for first ccd."""
+    """The exposure of channel 7 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue17
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=7, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure18(Exposure):
-    """The exposure of channel 8 for first ccd."""
+    """The exposure of channel 8 for first CCD."""
 
     mode = MeasureMode.cmiExposureValue18
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=8, ccd_array=1)
+
 
 @dataclass(init=False)
 class Exposure21(Exposure):
-    """The exposure of channel 1 for second ccd."""
+    """The exposure of channel 1 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue21
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=1, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure22(Exposure):
-    """The exposure of channel 2 for second ccd."""
+    """The exposure of channel 2 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue22
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=2, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure23(Exposure):
-    """The exposure of channel 3 for second ccd."""
+    """The exposure of channel 3 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue23
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=3, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure24(Exposure):
-    """The exposure of channel 4 for second ccd."""
+    """The exposure of channel 4 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue24
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=4, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure25(Exposure):
-    """The exposure of channel 5 for second ccd."""
+    """The exposure of channel 5 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue25
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=5, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure26(Exposure):
-    """The exposure of channel 6 for second ccd."""
+    """The exposure of channel 6 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue26
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=6, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure27(Exposure):
-    """The exposure of channel 7 for second ccd."""
+    """The exposure of channel 7 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue27
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=7, ccd_array=2)
+
 
 @dataclass(init=False)
 class Exposure28(Exposure):
-    """The exposure of channel 8 for second ccd."""
+    """The exposure of channel 8 for second CCD."""
 
     mode = MeasureMode.cmiExposureValue28
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, exposure=Decimal(int_val), channel=8, ccd_array=2)
-

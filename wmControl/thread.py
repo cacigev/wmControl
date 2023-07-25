@@ -4,9 +4,9 @@ from threading import Event
 
 import janus
 
-from wmControl.wlmConst import MeasureMode
-from wmControl import wlmConst, wlmData
-from wmControl import data_factory
+from . import wlmConst, wlmData
+from .data_factory import data_factory
+from .wlmConst import DataPackage
 
 callbacktype = ctypes.CFUNCTYPE(
     None,
@@ -50,14 +50,18 @@ class Worker:
             result: int
                 Only relevant if mode is cmiSwitcherChannel. Then it holds the time of switching a channel.
             """
-            output_queue.put(data_factory.data_factory.get(mode, ver, int_val, double_val, result))
-            #output_queue.put(f"Time:{int_val}, WM:{ver}, Channel:{mode}, Wavelength:{double_val:.8f}, Res1:{result}")
+            try:
+                package = data_factory.get(mode, ver, int_val, double_val, result)
+            except ValueError:
+                self.__logger.debug("Unknown data type received: %i.", mode)
+            else:
+                output_queue.put(package)
 
         cb_pointer = callbacktype(callback)
 
         return cb_pointer
 
-    def run(self, output_queue: janus.SyncQueue[str], shutdown_event: Event) -> None:
+    def run(self, output_queue: janus.SyncQueue[DataPackage], shutdown_event: Event) -> None:
         """
         Producer for wavemeter data.
 
@@ -65,8 +69,8 @@ class Worker:
 
         Parameters
         ----------
-        output_queue: janus.SyncQueue[int]
-            The synchronus part of the queue, wich was instantiated in control.wavemeter.
+        output_queue: janus.SyncQueue[DataPackage]
+            The synchronous part of the queue.
         """
 
         cb_pointer = self._create_callback(output_queue)

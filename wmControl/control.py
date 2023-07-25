@@ -13,6 +13,7 @@ import janus
 
 from wmControl import wlmData
 from wmControl.thread import Worker
+from wmControl.wlmConst import DataPackage
 
 
 class Wavemeter:
@@ -36,7 +37,7 @@ class Wavemeter:
 
     version = 0  # 0 should call the first activated WM, but don't rely on that.
 
-    async def async_coro(self, async_q: janus.AsyncQueue[int]) -> None:
+    async def async_coro(self, async_q: janus.AsyncQueue[DataPackage]) -> None:
         """
         Consumer of queue.
 
@@ -44,8 +45,8 @@ class Wavemeter:
 
         Parameter
         ---------
-        async_q: janus.AsyncQueue[int]
-            Asynchronous part of the queue which is instantiated via control.wavemeter.
+        async_q: janus.AsyncQueue[DataPackage]
+            Asynchronous part of the queue.
         """
         i = 0
         try:
