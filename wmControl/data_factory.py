@@ -8,7 +8,7 @@ from wmControl.wlmConst import DataPackage, MeasureMode
 from wmControl.wlmConst import Wavelength1, Wavelength2, Wavelength3, Wavelength4, Wavelength5, Wavelength6, Wavelength7, Wavelength8
 from wmControl.wlmConst import Temperature, Distance, Linewidth, AnalogIn, AnalogOut
 from wmControl.wlmConst import PID_P, PID_I, PID_D, PID_T, PID_dt
-from wmControl.wlmConst import ExternalInput, DevitationSensitivityFactor
+from wmControl.wlmConst import ExternalInput, DeviationSensitivityFactor
 # IntVal imports
 from wmControl.wlmConst import FastMode, WideMode, ResultMode, ExposureMode, PulseMode, DisplayMode, AnalysisMode, SwitcherMode
 from wmControl.wlmConst import Reduced, Range, Link, Operation, SwitcherChannel, PIDCourse, DeviationSensitivityDim
@@ -69,7 +69,7 @@ data_factory.register(PID_D)
 data_factory.register(PID_T)
 data_factory.register(PID_dt)
 data_factory.register(ExternalInput)
-data_factory.register(DevitationSensitivityFactor)
+data_factory.register(DeviationSensitivityFactor)
 #
 data_factory.register(FastMode)
 data_factory.register(WideMode)

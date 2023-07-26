@@ -998,7 +998,7 @@ class DeviationSensitivityFactor(DataPackage):
     value: Decimal
 
     def __str__(self):
-        return f"Devitation sensitivity factor measurement: {self.value} Arb.U. | \
+        return f"Deviation sensitivity factor measurement: {self.value} Arb.U. | \
                  timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
