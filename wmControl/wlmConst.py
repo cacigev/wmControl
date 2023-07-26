@@ -660,7 +660,7 @@ class Wavelength(DataPackage):
         Channel of the wavemeter. The channel is a 0 based index.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    value : float
+    value : Decimal
         Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
     """
 
@@ -755,7 +755,7 @@ class Wavelength8(Wavelength):
 @dataclass(init=False)
 class Temperature(DataPackage):
     """
-    The internal temperature in Celsius.
+    The internal temperature in degree Celsius.
 
     Attributes
     ----------
@@ -764,7 +764,7 @@ class Temperature(DataPackage):
     timestamp : int
         Timestamp of the measurement in milliseconds.
     value : Decimal
-        Measured temperature in Celsius.
+        Measured temperature in degree Celsius.
     """
 
     mode = MeasureMode.cmiTemperature
@@ -778,7 +778,9 @@ class Temperature(DataPackage):
         super().__init__(product_id=version)
 
     def __str__(self):
-        return f"Temperature measurement: {self.value:.4f} °C | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        return (
+            f"Temperature measurement: {self.value:.4f} °C | timestamp {self.timestamp} | wavemeter {self.product_id}."
+        )
 
 
 @dataclass
@@ -792,7 +794,7 @@ class Distance(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    value : float
+    value : Decimal
         Distance between signal 1 and 2.
     """
 
@@ -802,9 +804,7 @@ class Distance(DataPackage):
     value: Decimal
 
     def __str__(self):
-        return (
-            f"Distance measurement: {self.value} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
-        )
+        return f"Distance measurement: {self.value} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
 @dataclass
@@ -866,7 +866,7 @@ class AnalogOut(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    value : float
+    value : Decimal
         Analog output in volt.
     """
 
@@ -955,7 +955,7 @@ class PID_dt(PID):
 @dataclass
 class ExternalInput(DataPackage):
     """
-    External user input transfered to the wavemeter (64 possible). Meant to control wavemeter via a client.
+    External user input transferred to the wavemeter (64 possible). Meant to control wavemeter via a client.
 
     Attributes
     ----------
@@ -963,7 +963,7 @@ class ExternalInput(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    value : float
+    value : Decimal
         External input.
     """
 
@@ -987,7 +987,7 @@ class DeviationSensitivityFactor(DataPackage):
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     timestamp : int
         Timestamp of the measurement in milliseconds.
-    value : float
+    value : Decimal
         Deviation sensitivity factor.
     """
 
@@ -1092,7 +1092,7 @@ class ExposureMode(DataPackage):
 @dataclass
 class Range(DataPackage):
     """
-    Range represent the range in wich the wavemeter is operating.
+    Range represent the range in which the wavemeter is operating.
 
     Attributes
     ----------
@@ -1120,7 +1120,7 @@ class PulseMode(DataPackage):
     product_id : int
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     value : int
-        Puls mode of the wavemeter. Either 0, 1 or 2. 0 is continuous mode, 1 is standard, sigle and internally triggered pulsed mode and
+        Pulse mode of the wavemeter. Either 0, 1 or 2. 0 is continuous mode, 1 is standard, single and internally triggered pulsed mode and
         2 is double and externally triggered pulsed mode.
     """
 
@@ -1142,7 +1142,7 @@ class DisplayMode(DataPackage):
     product_id : int
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     value : int
-        Display mode settings. Either 0 or 1. 1 if the the signal are to be drawn.
+        Display mode settings. Either 0 or 1. 1 if the signal are to be drawn.
     """
 
     mode = MeasureMode.cmiDisplayMode
@@ -1314,7 +1314,7 @@ class DeviationSensitivityDim(DataPackage):
     product_id : int
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     value : int
-        Dimension of the sensitivty of the deviation.
+        Dimension of the sensitivity of the deviation.
     """
 
     mode = MeasureMode.cmiDeviationSensitivityDim
@@ -1328,7 +1328,7 @@ class DeviationSensitivityDim(DataPackage):
 @dataclass
 class Min(DataPackage):
     """
-    The minimum of a measured interference pattern on a channel. For wavemeter with two ccds there will be two minimums. See also manual
+    The minimum of a measured interference pattern on a channel. For wavemeter with two CCDs there will be two minimums. See also manual
     page 73 GetAmplitudeNum. Do not directly instantiate this class. Use a sibling to correctly set the channel and mode enum.
 
     Attributes
@@ -1340,7 +1340,7 @@ class Min(DataPackage):
     channel : int
         Channel of the wavemeter. The channel is a 0 based index.
     ccd_array : int
-        Index of the ccd array wich measured the interference pattern.
+        Index of the CCD array that measured the interference pattern.
     """
 
     value: Decimal
@@ -1554,7 +1554,7 @@ class Min29(Min):
 @dataclass
 class Max(DataPackage):
     """
-    The maximum of a measured interference pattern on a channel. For wavemeter with two ccds there will be two maximums. See also manual
+    The maximum of a measured interference pattern on a channel. For wavemeter with two CCDs there will be two maximums. See also manual
     page 73 GetAmplitudeNum. Do not directly instantiate this class. Use a sibling to correctly set the channel and mode enum.
 
     Attributes
@@ -1566,7 +1566,7 @@ class Max(DataPackage):
     channel : int
         Channel of the wavemeter. The channel is a 0 based index.
     ccd_array : int
-        Index of the ccd array wich measured the interference pattern.
+        Index of the CCD array that measured the interference pattern.
     """
 
     value: Decimal
@@ -1780,7 +1780,7 @@ class Max29(Max):
 @dataclass
 class Avg(DataPackage):
     """
-    The average of a measured interference pattern on a channel. For wavemeter with two ccds there will be two averages. See also manual
+    The average of a measured interference pattern on a channel. For wavemeter with two CCDs there will be two averages. See also manual
     page 73 GetAmplitudeNum. Do not directly instantiate this class. Use a sibling to correctly set the channel and mode enum.
 
     Attributes
@@ -1792,7 +1792,7 @@ class Avg(DataPackage):
     channel : int
         Channel of the wavemeter. The channel is a 0 based index.
     ccd_array : int
-        Index of the ccd array wich measured the interference pattern.
+        Index of the CCD array that measured the interference pattern.
     """
 
     value: Decimal
@@ -2018,10 +2018,10 @@ class Exposure(DataPackage):
     channel : int
         Channel of the wavemeter. The channel is a 0 based index.
     ccd_array : int
-        Index of the ccd array wich measured the interference pattern.
+        Index of the CCD array that measured the interference pattern.
     """
 
-    average: Decimal
+    value: Decimal
     channel: int
     ccd_array: int
 
