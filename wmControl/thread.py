@@ -31,7 +31,7 @@ class Worker:
         Holds the queue.
     """
 
-    def _create_callback(self, output_queue):
+    def _create_callback(self, output_queue, cmd):
         def callback(ver: int, mode: int, int_val: int, double_val: float, result: int):
             """
             Function called by wlmData.dll via thread.
@@ -50,8 +50,10 @@ class Worker:
             result: int
                 Only relevant if mode is cmiSwitcherChannel. Then it holds the time of switching a channel.
             """
+            package = []
             try:
-                package = data_factory.get(mode, ver, int_val, double_val, result)
+                if mode == cmd:
+                    package = data_factory.get(mode, ver, int_val, double_val, result)
             except ValueError:
                 self.__logger.debug("Unknown data type received: %i.", mode)
             else:
@@ -61,7 +63,7 @@ class Worker:
 
         return cb_pointer
 
-    def run(self, output_queue: janus.SyncQueue[DataPackage], shutdown_event: Event) -> None:
+    def run(self, output_queue: janus.SyncQueue[DataPackage], shutdown_event: Event, cmd) -> None:
         """
         Producer for wavemeter data.
 
@@ -73,7 +75,7 @@ class Worker:
             The synchronous part of the queue.
         """
 
-        cb_pointer = self._create_callback(output_queue)
+        cb_pointer = self._create_callback(output_queue, cmd)
 
         wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyInstallCallbackEx, cb_pointer, 0)
         self.__logger.info("Connected to host")

@@ -30,15 +30,15 @@ class IPHandler(QueryHandler,CommandHandler):
         self.value=program_data
         return "Ok"
 
-#ci = CommandInterpreter(manufacturer='HighFinesse',model='WS8',serial='4734',firmware_version='0.1')
+ci = CommandInterpreter(manufacturer='HighFinesse',model='WS8',serial='4734',firmware_version='0.1')
 
-#sh = SwitchingHandler()
-#iph = IPHandler()
+sh = SwitchingHandler()
+iph = IPHandler()
 
-#ci.register_query_handler("CHANNEL:SWITCH",sh)
-#ci.register_command_handler("CHANNEL:SWITCH",sh)
-#ci.register_query_handler("CONTROLpc:IP",iph)
-#ci.register_command_handler("CONTROLpc:IP",iph)
+ci.register_query_handler("CHANNEL:SWITCH",sh)
+ci.register_command_handler("CHANNEL:SWITCH",sh)
+ci.register_query_handler("CONTROLpc:IP",iph)
+ci.register_command_handler("CONTROLpc:IP",iph)
 
 #print(ci.process_line("*IDN?"))
 #print(ci.process_line("CHANNEL:SWITCH?"))
