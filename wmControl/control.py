@@ -94,7 +94,7 @@ class Wavemeter:
         Manages synchronous and asynchronous part of the queue.
         """
         # parse input
-        cmd = input#handler.ci.process_line(input)
+        cmd = int(input)
         result_queue: janus.Queue[str] = janus.Queue()
         shutdown_event: threading.Event = threading.Event()
         async with AsyncExitStack() as stack:

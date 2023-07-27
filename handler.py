@@ -31,7 +31,7 @@ class IPHandler(QueryHandler,CommandHandler):
         self.value=program_data
         return "Ok"
 
-ci = CommandInterpreter(manufacturer='HighFinesse',model='WS8',serial='4734',firmware_version='7.64.263.4')
+ci = CommandInterpreter(manufacturer='HighFinesse',model='WS8',serial='4734',firmware_version='0.1')
 
 sh = SwitchingHandler()
 iph = IPHandler()
@@ -41,15 +41,9 @@ ci.register_command_handler("CHANNEL:SWITCH",sh)
 ci.register_query_handler("CONTROLpc:IP",iph)
 ci.register_command_handler("CONTROLpc:IP",iph)
 
-def process_line(input: str):
-    """Process line with given grammar."""
-    print("here1.5")
-    value = ci.process_line(input)
-    print(value)
-
-print(ci.process_line("*IDN?"))
-print(ci.process_line("CHANNEL:SWITCH?"))
-print(ci.process_line("CHANNEL:SWITCH 8"))
+#print(ci.process_line("*IDN?"))
+#print(ci.process_line("CHANNEL:SWITCH?"))
+#print(ci.process_line("CHANNEL:SWITCH 8"))
 #print(ci.process_line("CHANNEL:SWITCH?"))
 #print(ci.process_line("CONTROL:IP?"))
 #print(ci.process_line("CONTROL:IP \'195.168.1.240\'"))
