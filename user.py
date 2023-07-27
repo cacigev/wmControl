@@ -8,7 +8,7 @@ import sys
 from decouple import config
 
 from wmControl import control
-from wmControl import handler
+import handler
 
 
 def parse_log_level(log_level: int | str) -> int:
@@ -48,11 +48,6 @@ elif sys.platform == "linux":
     dll_path = "./wmControl/libwlmData.so"
 
 wm = control.Wavemeter(4711, dll_path=dll_path)  # Quips B 192.168.1.240
-input = input()
-print("here")
-parsed_input = handler.process_line(input)
-print(parsed_input)
-input = 94
 
 try:
     asyncio.run(wm.main(parsed_input))

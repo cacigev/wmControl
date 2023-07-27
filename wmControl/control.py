@@ -66,6 +66,8 @@ class Wavemeter:
         ----------
         tasks: Set[asyncio.Task]
             The tasks to cancel
+        shutdown_event : threading.Event
+            shutdown
         """
         shutdown_event.set()
         try:
@@ -80,28 +82,27 @@ class Wavemeter:
         except Exception:  # pylint: disable=broad-except
             self.__logger.exception("Error during shutdown of the controller.")
 
-    async def producer(self, result_queue, shutdown_event, cmd):
+    async def producer(self, result_queue, shutdown_event):
         sync_worker = Worker(self.version)
         try:
-            await asyncio.get_running_loop().run_in_executor(None, sync_worker.run, result_queue, shutdown_event, cmd)
+            await asyncio.get_running_loop().run_in_executor(None, sync_worker.run, result_queue, shutdown_event)
         except asyncio.CancelledError:
             pass
         finally:
             print("producer done!")
 
-    async def main(self, input: str) -> None:
+    async def main(self) -> None:
         """
         Manages synchronous and asynchronous part of the queue.
         """
         # parse input
-        cmd = int(input)
         result_queue: janus.Queue[str] = janus.Queue()
         shutdown_event: threading.Event = threading.Event()
         async with AsyncExitStack() as stack:
             tasks: set[asyncio.Task] = set()
             stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
 
-            producer = asyncio.create_task(self.producer(result_queue.sync_q, shutdown_event, cmd))
+            producer = asyncio.create_task(self.producer(result_queue.sync_q, shutdown_event))
             tasks.add(producer)
             consumer = asyncio.create_task(self.async_coro(result_queue.async_q))
             tasks.add(consumer)

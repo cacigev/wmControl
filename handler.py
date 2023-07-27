@@ -31,7 +31,7 @@ class IPHandler(QueryHandler,CommandHandler):
         self.value=program_data
         return "Ok"
 
-ci = CommandInterpreter(manufacturer='HighFinesse',model='WS8',serial='4734',firmware_version='0.1')
+ci = CommandInterpreter(manufacturer='HighFinesse',model='WS8',serial='4734',firmware_version='7.64.263.4')
 
 sh = SwitchingHandler()
 iph = IPHandler()
