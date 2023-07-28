@@ -65,6 +65,7 @@ class Worker:
     def run(self,
             output_queue: janus.SyncQueue[DataPackage],
             input_queue: janus.SyncQueue[MeasureMode],
+            helper_queue,
             shutdown_event: Event) -> None:
         """
         Producer for wavemeter data.
@@ -79,22 +80,23 @@ class Worker:
             The user inputs.
         shutdown_event: Event
             Shutdown event.
+        helper_queue: janus.SyncQueue[DataPackage]
+            Temporarily stores output.
         """
 
-        cb_pointer = self._create_callback(output_queue)
+        cb_pointer = self._create_callback(helper_queue)
 
         wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyInstallCallbackEx, cb_pointer, 0)
         self.__logger.info("Connected to host")
 
         try:
-            i = 0
+            # i = 0
             request = input_queue.get()
             while request:
-                status = output_queue.get()
+                status = helper_queue.get()
                 if request == status.mode:
-                    val = status
-                    print('run:', i, val)
-                    i += 1
+                    # print('run:', i, status)
+                    # i += 1
                     output_queue.put(status)
                     request = input_queue.get()
             # shutdown_event.wait()

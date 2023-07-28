@@ -83,7 +83,7 @@ class Wavemeter:
         except Exception:  # pylint: disable=broad-except
             self.__logger.exception("Error during shutdown of the controller.")
 
-    async def producer(self, result_queue, input_queue, shutdown_event):
+    async def producer(self, result_queue, input_queue, helper_queue, shutdown_event):
         sync_worker = Worker(self.version)
         try:
             await asyncio.get_running_loop().run_in_executor(
@@ -91,6 +91,7 @@ class Wavemeter:
                 sync_worker.run,
                 result_queue,
                 input_queue,
+                helper_queue,
                 shutdown_event
             )
         except asyncio.CancelledError:
@@ -117,13 +118,17 @@ class Wavemeter:
         input_queue.put(95)
         input_queue.put(95)
 
-        # input_queue.put(95)
-        # input_queue.put(95)
-        # input_queue.put(95)
-        #
-        # input_queue.put(95)
-        # input_queue.put(95)
-        # input_queue.put(95)
+        input_queue.put(14)
+        input_queue.put(95)
+        input_queue.put(95)
+
+        input_queue.put(95)
+        input_queue.put(42)
+        input_queue.put(14)
+
+        input_queue.put(95)
+        input_queue.put(95)
+        input_queue.put(95)
 
         input_queue.put(None)
 
@@ -134,12 +139,16 @@ class Wavemeter:
         result_queue: janus.Queue[str] = janus.Queue()
         shutdown_event: threading.Event = threading.Event()
         input_queue = janus.Queue()
+        helper_queue = janus.Queue()
         self.helper(input_queue.sync_q)  # simulating input
         # async with AsyncExitStack() as stack:
         tasks: set[asyncio.Task] = set()
         # stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
 
-        producer = asyncio.create_task(self.producer(result_queue.sync_q, input_queue.sync_q, shutdown_event))
+        producer = asyncio.create_task(self.producer(result_queue.sync_q,
+                                                     input_queue.sync_q,
+                                                     helper_queue.sync_q,
+                                                     shutdown_event))
         tasks.add(producer)
         # bin_worker = asyncio.create_task(self.bin(result_queue.sync_q, input_queue.sync_q))
         # tasks.add(bin)
