@@ -22,18 +22,23 @@ callbacktype = ctypes.CFUNCTYPE(
 class Worker:
     """
     Managing the synchronous threads from the wavemeter.
-
-    Attributes
-    ----------
-    version : int
-        Version of the WM. Works like a serial number just not named like it. 0 should call the first activated WM, but
-        don't rely on that.
-    queue : Queue
-        Holds the queue.
     """
 
-    def _create_callback(self, output_queue):
-        def callback(ver: int, mode: int, int_val: int, double_val: float, result: int):
+    def _create_callback(self, output_queue: janus.SyncQueue[DataPackage]) -> ctypes.POINTER:
+        """
+        Creates callbackpointer for thread.
+
+        Parameter
+        ---------
+        output_queue : janus.SyncQueue[DataPackage]
+            Holds wavemeter state changes.
+
+        Return
+        ------
+        cb_pointer : ctypes.POINTER
+            Pointer of the internal defined function.
+        """
+        def callback(ver: int, mode: int, int_val: int, double_val: float, result: int) -> None:
             """
             Function called by wlmData.dll via thread.
 
@@ -52,13 +57,13 @@ class Worker:
                 Only relevant if mode is cmiSwitcherChannel. Then it holds the time of switching a channel.
             """
             try:
-                package = data_factory.get(mode, ver, int_val, double_val, result)
+                package: DataPackage = data_factory.get(mode, ver, int_val, double_val, result)
             except ValueError:
                 self.__logger.debug("Unknown data type received: %i.", mode)
             else:
                 output_queue.put(package)
 
-        cb_pointer = callbacktype(callback)
+        cb_pointer: ctypes.POINTER = callbacktype(callback)
 
         return cb_pointer
 
@@ -70,7 +75,8 @@ class Worker:
         """
         Producer for wavemeter data.
 
-        Uses the vendor solution for threading and writes all measurements or state changings of a connected wavemeter into the queue.
+        Uses the vendor solution for threading and writes all measurements or
+        state changings of a connected wavemeter into the queue.
 
         Parameters
         ----------
@@ -84,15 +90,16 @@ class Worker:
             Temporarily stores output.
         """
 
-        cb_pointer = self._create_callback(helper_queue)
+        cb_pointer: ctypes.POINTER = self._create_callback(helper_queue)
 
         wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyInstallCallbackEx, cb_pointer, 0)
         self.__logger.info("Connected to host")
 
         try:
             # i = 0
-            request = input_queue.get()
+            request: DataPackage = input_queue.get()
             while request:
+                # Picking relevant information from helper queue and put it in output queue.
                 status = helper_queue.get()
                 if request == status.mode:
                     # print('run:', i, status)
