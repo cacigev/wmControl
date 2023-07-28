@@ -31,7 +31,7 @@ class Wavemeter:
     Parameters
     ----------
     ver : int
-        Version of the WM. Works like a serialnumber just not named like it.
+        Version of the WM. Works like a serial number just not named like it.
     dll_path : str
         The directory path where the wlmData.dll is.
     """
@@ -53,7 +53,7 @@ class Wavemeter:
         try:
             while "not terminated":
                 val = await async_q.get()
-                print(i, val)
+                print("consumer:", i, val)
                 i += 1
                 async_q.task_done()
         finally:
@@ -98,24 +98,55 @@ class Wavemeter:
         finally:
             print("producer done!")
 
+    async def bin(self, result: janus.AsyncQueue[DataPackage], request: janus.AsyncQueue[DataPackage]) -> None:
+        """
+        Only pick relevant information.
+        :param result:
+        :param request:
+        :return:
+        """
+        pass
+
+    def helper(self, input_queue) -> None:
+        """
+        Helper simulating input.
+        :param input_queue:
+        :return:
+        """
+        input_queue.put(95)
+        input_queue.put(95)
+        input_queue.put(95)
+
+        # input_queue.put(95)
+        # input_queue.put(95)
+        # input_queue.put(95)
+        #
+        # input_queue.put(95)
+        # input_queue.put(95)
+        # input_queue.put(95)
+
+        input_queue.put(None)
+
     async def main(self) -> None:
         """
         Manages synchronous and asynchronous part of the queue.
         """
-        # parse input
         result_queue: janus.Queue[str] = janus.Queue()
         shutdown_event: threading.Event = threading.Event()
-        input_queue = [1, 2, 3, 4, 5, None]
-        async with AsyncExitStack() as stack:
-            tasks: set[asyncio.Task] = set()
-            stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
+        input_queue = janus.Queue()
+        self.helper(input_queue.sync_q)  # simulating input
+        # async with AsyncExitStack() as stack:
+        tasks: set[asyncio.Task] = set()
+        # stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
 
-            producer = asyncio.create_task(self.producer(result_queue.sync_q, input_queue, shutdown_event))
-            tasks.add(producer)
-            consumer = asyncio.create_task(self.async_coro(result_queue.async_q))
-            tasks.add(consumer)
+        producer = asyncio.create_task(self.producer(result_queue.sync_q, input_queue.sync_q, shutdown_event))
+        tasks.add(producer)
+        # bin_worker = asyncio.create_task(self.bin(result_queue.sync_q, input_queue.sync_q))
+        # tasks.add(bin)
+        consumer = asyncio.create_task(self.async_coro(result_queue.async_q))
+        tasks.add(consumer)
 
-            await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
     def __init__(self, ver, dll_path: str, length=5) -> None:
         # Set attributes

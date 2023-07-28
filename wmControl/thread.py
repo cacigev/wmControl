@@ -40,7 +40,7 @@ class Worker:
             Parameters
             ----------
             ver: int
-                Version of the WM. Works like a serialnumber just not named like it.
+                Version of the WM. Works like a serial number just not named like it.
             mode: int
                 cmi constants defined in wlmConst. Represents the different measurements or state changings of a
                 connected wavemeter. For more see wlmConst or manual.
@@ -65,7 +65,7 @@ class Worker:
     def run(self,
             output_queue: janus.SyncQueue[DataPackage],
             input_queue: janus.SyncQueue[MeasureMode],
-            shutdown_event: Event) -> None:  # shutdown_event -> queue
+            shutdown_event: Event) -> None:
         """
         Producer for wavemeter data.
 
@@ -87,9 +87,17 @@ class Worker:
         self.__logger.info("Connected to host")
 
         try:
-            while input_queue:
-                pass#input_queue.get() == output_queue
-            shutdown_event.wait()  # janus queue None warten
+            i = 0
+            request = input_queue.get()
+            while request:
+                status = output_queue.get()
+                if request == status.mode:
+                    val = status
+                    print('run:', i, val)
+                    i += 1
+                    output_queue.put(status)
+                    request = input_queue.get()
+            # shutdown_event.wait()
             # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
             self.__logger.info("Removed callback.")

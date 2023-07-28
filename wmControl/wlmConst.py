@@ -498,7 +498,7 @@ cOther = 2
 cFreeHeNe = 3
 cSLR1530 = 5
 
-# Unit Constants for Autocalibration
+# Unit Constants for autocalibration
 cACOnceOnStart = 0
 cACMeasurements = 1
 cACDays = 2
@@ -661,7 +661,7 @@ class Wavelength(DataPackage):
     timestamp : int
         Timestamp of the measurement in milliseconds.
     value : Decimal
-        Measured wavelength in nm. ### Needs to be 8 digits long not longer. -> Sonst sinnloser Müll
+        Measured wavelength in nm. Needs to be 8 digits long, no longer. Else there will be pointless data.
     """
 
     timestamp: int
@@ -1015,7 +1015,7 @@ class FastMode(DataPackage):
     product_id : int
         Product id (version) of the WM. Might be a serial number. Do not count on it though.
     value : int
-        Fast mode state of the wavemeter. Attribute may 0 or 1. 1 means fast mode is active.
+        Fast mode state of the wavemeter. Attribute may 0 or 1. 1 mean fast mode is active.
     """
 
     mode = MeasureMode.cmiFastMode
