@@ -7,7 +7,6 @@ import sys
 
 from decouple import config
 
-import handler
 from wmControl import control
 
 
