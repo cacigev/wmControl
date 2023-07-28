@@ -7,8 +7,8 @@ import sys
 
 from decouple import config
 
-from wmControl import control
 import handler
+from wmControl import control
 
 
 def parse_log_level(log_level: int | str) -> int:
@@ -50,6 +50,6 @@ elif sys.platform == "linux":
 wm = control.Wavemeter(4711, dll_path=dll_path)  # Quips B 192.168.1.240
 
 try:
-    asyncio.run(wm.main(parsed_input))
+    asyncio.run(wm.main())
 except KeyboardInterrupt:
     logging.getLogger(__name__).info("Application shut down.")
