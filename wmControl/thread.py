@@ -7,6 +7,7 @@ import janus
 from . import wlmConst, wlmData
 from .data_factory import data_factory
 from .wlmConst import DataPackage
+from .wlmConst import MeasureMode
 
 callbacktype = ctypes.CFUNCTYPE(
     None,
@@ -61,7 +62,10 @@ class Worker:
 
         return cb_pointer
 
-    def run(self, output_queue: janus.SyncQueue[DataPackage], shutdown_event: Event) -> None:  # shutdown_event -> queue
+    def run(self,
+            output_queue: janus.SyncQueue[DataPackage],
+            input_queue: janus.SyncQueue[MeasureMode],
+            shutdown_event: Event) -> None:  # shutdown_event -> queue
         """
         Producer for wavemeter data.
 
@@ -71,6 +75,10 @@ class Worker:
         ----------
         output_queue: janus.SyncQueue[DataPackage]
             The synchronous part of the queue.
+        input_queue: janus.SyncQueue[DataPackage]
+            The user inputs.
+        shutdown_event: Event
+            Shutdown event.
         """
 
         cb_pointer = self._create_callback(output_queue)
@@ -79,6 +87,8 @@ class Worker:
         self.__logger.info("Connected to host")
 
         try:
+            while input_queue:
+                pass#input_queue.get() == output_queue
             shutdown_event.wait()  # janus queue None warten
             # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
@@ -109,7 +119,7 @@ class Worker:
         Raises
         ------
         ValueError
-            If a mode is not writen down in wlmConst but recived via this function.
+            If a mode is not writen down in wlmConst but received via this function.
         """
         const_to_channel = {
             wlmConst.MeasureMode.cmiWavelength1: 1,
