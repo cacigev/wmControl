@@ -24,7 +24,7 @@ class Worker:
     Managing the synchronous threads from the wavemeter.
     """
 
-    def _create_callback(self, output_queue: janus.SyncQueue[DataPackage]) -> ctypes.POINTER:
+    def _create_callback(self, output_queue: janus.SyncQueue[DataPackage], request) -> ctypes.POINTER:
         """
         Creates callbackpointer for thread.
 
@@ -61,7 +61,8 @@ class Worker:
             except ValueError:
                 self.__logger.debug("Unknown data type received: %i.", mode)
             else:
-                output_queue.put(package)
+                if request == mode:
+                    output_queue.put(package)
 
         cb_pointer: ctypes.POINTER = callbacktype(callback)
 
@@ -70,7 +71,8 @@ class Worker:
     def run(self,
             output_queue: janus.SyncQueue[DataPackage],
             input_queue: janus.SyncQueue[MeasureMode],
-            helper_queue,
+            helper_queue: janus.SyncQueue[MeasureMode],
+            mode,
             shutdown_event: Event) -> None:
         """
         Producer for wavemeter data.
@@ -90,22 +92,26 @@ class Worker:
             Temporarily stores output.
         """
 
-        cb_pointer: ctypes.POINTER = self._create_callback(helper_queue)
+        cb_pointer: ctypes.POINTER = self._create_callback(helper_queue, mode)
 
         wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyInstallCallbackEx, cb_pointer, 0)
         self.__logger.info("Connected to host")
 
         try:
-            # i = 0
-            request: DataPackage = input_queue.get()
+            i = 0
+            # -------------------------
+            # input_queue ist hier leer, da sie in start_producers geleert wurde.
+            # -> while wird übersprungen ohne Daten zu sammeln.
+            request: DataPackage = input_queue.get()  # Right now request: int.
+            print("First request: ", request)
             while request:
-                # Picking relevant information from helper queue and put it in output queue.
+                print(i, request)
                 status = helper_queue.get()
-                if request == status.mode:
-                    # print('run:', i, status)
-                    # i += 1
-                    output_queue.put(status)
-                    request = input_queue.get()
+                print('run:', i, status)
+                i += 1
+                # output_queue.put(status)
+                request = input_queue.get()
+            # -------------------------
             # shutdown_event.wait()
             # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
@@ -174,3 +180,37 @@ class Worker:
     def __init__(self, ver):
         self.__logger = logging.getLogger(__name__)
         self._version = ver
+
+class InputWorker:
+
+    def run(self, input_queue, request_queue):
+        """
+
+        """
+        helper_queue = janus.Queue()
+        request = input_queue.get()
+        last_request = request
+        while request:
+            # Picking relevant information from helper queue and put it in output queue.
+            status = helper_queue.get()
+            if request == status.mode:
+                # print('run:', i, status)
+                # i += 1
+                request_queue.put(status)
+                request = input_queue.get()
+        # while request:
+        #     if request == last_request:
+        #         print(request)
+        #         helper_queue.sync_q.put(request)
+        #         request = input_queue.get()
+        #     else:
+        #         print("End of Queue: ", request)
+        #         helper_queue.sync_q.put(None)
+        #         request_queue.put(helper_queue)
+        #
+        #         helper_queue = janus.Queue()
+        #         helper_queue.sync_q.put(request)
+        #         last_request = request
+        #
+        #         request = input_queue.get()
+        print("First object of first queue: ", request_queue.get().get())

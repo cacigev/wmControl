@@ -13,6 +13,7 @@ import janus
 
 from wmControl import wlmData
 from .data_factory import data_factory
+from wmControl.thread import InputWorker
 from wmControl.thread import Worker
 from wmControl.wlmConst import DataPackage
 
@@ -86,7 +87,7 @@ class Wavemeter:
     async def producer(self,
                        result_queue: janus.AsyncQueue[DataPackage],
                        input_queue: janus.AsyncQueue[DataPackage],
-                       helper_queue: janus.AsyncQueue[DataPackage],
+                       request,
                        shutdown_event: threading.Event
                        ) -> None:
         """
@@ -104,13 +105,15 @@ class Wavemeter:
             Temporarily stores data. Internal use only.
         """
         sync_worker = Worker(self.version)
+        helper_queue: janus.Queue[DataPackage] = janus.Queue()
         try:
             await asyncio.get_running_loop().run_in_executor(
                 None,
                 sync_worker.run,
                 result_queue,
                 input_queue,
-                helper_queue,
+                helper_queue.sync_q,
+                request,
                 shutdown_event
             )
         except asyncio.CancelledError:
@@ -118,38 +121,53 @@ class Wavemeter:
         finally:
             print("producer done!")
 
-    async def bin(self, result: janus.AsyncQueue[DataPackage], request: janus.AsyncQueue[DataPackage]) -> None:
-        """
-        Only pick relevant information.
-        :param result:
-        :param request:
-        :return:
-        """
-        pass
-
     def helper(self, input_queue) -> None:
         """
         Helper simulating input.
         :param input_queue:
         :return:
         """
-        input_queue.put(95)
-        input_queue.put(95)
-        input_queue.put(95)
+        input_queue.put(95)  # 0
+        input_queue.put(95)  # 1
+        input_queue.put(95)  # 2
 
-        input_queue.put(14)
-        input_queue.put(95)
-        input_queue.put(95)
+        input_queue.put(14)  # 3
+        input_queue.put(95)  # 4
+        input_queue.put(95)  # 5
 
-        input_queue.put(95)
-        input_queue.put(42)
-        input_queue.put(14)
+        input_queue.put(95)  # 6
+        input_queue.put(42)  # 7
+        input_queue.put(14)  # 8
 
-        input_queue.put(95)
-        input_queue.put(95)
-        input_queue.put(95)
+        input_queue.put(95)  # 9
+        input_queue.put(95)  # 10
+        input_queue.put(95)  # 11
 
         input_queue.put(None)
+
+    async def start_producers(self, result_queue, input_queue, shutdown_event):
+        """
+        Starts worker for every unique request.
+        """
+        worker_list: [int] = []
+        request: int = input_queue.get()  # Will turn to Datapackage
+        tasks: set[asyncio.Task] = set()
+        while request:
+            print("Request: ", request)
+            if request in worker_list:  # Will turn to request.mode
+                print("Producer already started")
+                pass
+            else:
+                print("Start producer")
+                worker_list.append(request)  # Will turn to request.mode
+                tasks.add(
+                    asyncio.create_task(self.producer(result_queue, input_queue, request, shutdown_event))
+                )
+            request = input_queue.get()
+            print("Next request: ", request, "\n")
+        print("Starting producers finished")
+
+        await asyncio.gather(*tasks)
 
     async def main(self) -> None:
         """
@@ -158,21 +176,25 @@ class Wavemeter:
         result_queue: janus.Queue[DataPackage] = janus.Queue()
         shutdown_event: threading.Event = threading.Event()
         input_queue: janus.Queue[DataPackage] = janus.Queue()
-        helper_queue: janus.Queue[DataPackage] = janus.Queue()
         self.helper(input_queue.sync_q)  # simulating input
         # async with AsyncExitStack() as stack:
         tasks: set[asyncio.Task] = set()
         # stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
 
-        producer = asyncio.create_task(self.producer(
-            result_queue.sync_q,
+        start_producers = asyncio.create_task(self.start_producers(
+            result_queue.async_q,
             input_queue.sync_q,
-            helper_queue.sync_q,
             shutdown_event
         ))
-        tasks.add(producer)
-        # bin_worker = asyncio.create_task(self.bin(result_queue.sync_q, input_queue.sync_q))
-        # tasks.add(bin)
+        tasks.add(start_producers)
+        # producer = asyncio.create_task(self.producer(
+        #     result_queue.sync_q,
+        #     input_queue.sync_q,
+        #     95,
+        #     shutdown_event
+        # ))
+        # tasks.add(producer)
+
         consumer = asyncio.create_task(self.async_coro(result_queue.async_q))
         tasks.add(consumer)
 
