@@ -1,3 +1,4 @@
+import asyncio
 import ctypes
 import logging
 from threading import Event
@@ -24,7 +25,7 @@ class Worker:
     Managing the synchronous threads from the wavemeter.
     """
 
-    def _create_callback(self, output_queue: janus.SyncQueue[DataPackage], request) -> ctypes.POINTER:
+    def _create_callback(self, output_queue: janus.SyncQueue[DataPackage]) -> ctypes.POINTER:
         """
         Creates callbackpointer for thread.
 
@@ -61,19 +62,18 @@ class Worker:
             except ValueError:
                 self.__logger.debug("Unknown data type received: %i.", mode)
             else:
-                if request == mode:
-                    output_queue.put(package)
+                output_queue.put(package)
 
         cb_pointer: ctypes.POINTER = callbacktype(callback)
 
         return cb_pointer
 
-    def run(self,
+    def run(
+            self,
             output_queue: janus.SyncQueue[DataPackage],
-            input_queue: janus.SyncQueue[MeasureMode],
-            helper_queue: janus.SyncQueue[MeasureMode],
-            mode,
-            shutdown_event: Event) -> None:
+            future_queue: [asyncio.Future],
+            shutdown_event: Event
+    ) -> None:
         """
         Producer for wavemeter data.
 
@@ -84,35 +84,23 @@ class Worker:
         ----------
         output_queue: janus.SyncQueue[DataPackage]
             The synchronous part of the queue.
-        input_queue: janus.SyncQueue[DataPackage]
-            The user inputs.
+        future_queue: janus.SyncQueue[DataPackage]
+            Expected measurements.
         shutdown_event: Event
             Shutdown event.
-        helper_queue: janus.SyncQueue[DataPackage]
-            Temporarily stores output.
         """
 
-        cb_pointer: ctypes.POINTER = self._create_callback(helper_queue, mode)
+        cb_pointer: ctypes.POINTER = self._create_callback(output_queue)
 
         wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyInstallCallbackEx, cb_pointer, 0)
         self.__logger.info("Connected to host")
 
         try:
-            i = 0
-            # -------------------------
-            # input_queue ist hier leer, da sie in start_producers geleert wurde.
-            # -> while wird übersprungen ohne Daten zu sammeln.
-            request: DataPackage = input_queue.get()  # Right now request: int.
-            print("First request: ", request)
-            while request:
-                print(i, request)
-                status = helper_queue.get()
-                print('run:', i, status)
-                i += 1
-                # output_queue.put(status)
-                request = input_queue.get()
-            # -------------------------
-            # shutdown_event.wait()
+            future = future_queue.get()  # last element of queue None
+            while future:
+                if future.done():  # set_result setzen
+                    future = future_queue.get()
+            shutdown_event.wait()
             # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
             self.__logger.info("Removed callback.")
