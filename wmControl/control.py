@@ -13,7 +13,6 @@ import janus
 
 from wmControl import wlmData
 from .data_factory import data_factory
-from wmControl.thread import InputWorker
 from wmControl.thread import Worker
 from wmControl.wlmConst import DataPackage
 from wmControl.wlmConst import MeasureMode
@@ -40,10 +39,10 @@ class Wavemeter:
 
     version = 0  # 0 should call the first activated WM, but don't rely on that.
 
-    async def async_coro(
+    async def result_consumer(
             self,
-            async_q: janus.AsyncQueue[DataPackage],
-            expected_reply: dict[str, [int]]
+            result_queue: janus.AsyncQueue[DataPackage],
+            expected_reply: dict[MeasureMode: [asyncio.Future]]
     ) -> None:
         """
         Consumer of queue.
@@ -57,19 +56,20 @@ class Wavemeter:
         expected_reply: dict[str, [int]]
             Holds expected data and id of dedicated request
         """
-        i = 0
+        # i = 0
         try:
             while "not terminated":
-                val = await async_q.get()
+                reply = await result_queue.get()
                 try:
-                    if str(val.mode) in expected_reply:
-                        request_id = expected_reply[str(val.mode)].pop(0)
-                        print(f"{request_id:04}: {val}")
-                except:
-                    expected_reply.pop(str(val.mode))
-                # print("consumer:", i, val)
-                i += 1
-                async_q.task_done()
+                    if reply.mode in expected_reply:
+                        value: asyncio.Future = await expected_reply[reply.mode].pop(0)
+                        value.set_result(reply)
+                        print("%s", value)
+                except IndexError:
+                    expected_reply.pop(reply.mode)
+                # print("consumer:", i, reply)
+                # i += 1
+                # result_queue.task_done()
         finally:
             self.__logger.info("Consumer shut down.")
 
@@ -99,8 +99,7 @@ class Wavemeter:
 
     async def producer(self,
                        result_queue: janus.SyncQueue[DataPackage],
-                       future_queue: janus.SyncQueue[DataPackage],
-                       shutdown_event: threading.Event
+                       job_queue: janus.SyncQueue[DataPackage]
                        ) -> None:
         """
         Producer of queue.
@@ -123,19 +122,17 @@ class Wavemeter:
                 None,
                 sync_worker.run,
                 result_queue,
-                future_queue,
-                shutdown_event,
+                job_queue
             )
         except asyncio.CancelledError:
             pass
         finally:
             print("producer done!")
 
-    # im producer werden futures erwartet. wenn future erledigt wurde, wird die zu run übergebene liste um future erleichtert
-    # set_result geschieht im producer
-    # list.remove(); erstes element
-
-    def helper(self, input_queue, future_queue) -> None:
+    def helper(
+            self,
+            input_queue: janus.SyncQueue
+    ) -> None:
         """
         Helper simulating input.
         :param input_queue:
@@ -157,90 +154,61 @@ class Wavemeter:
         input_queue.put(MeasureMode.cmiWavelength8)  # 10
         input_queue.put(MeasureMode.cmiWavelength8)  # 11
 
-        input_queue.put(None)
-
-        loop = asyncio.get_running_loop()
-        for i in range(13):
-            future_queue.put(loop.create_future())
-        future_queue.put(None)
-
-    async def start_producers(self, result_queue, input_queue, shutdown_event):
-        """
-        Starts worker for every unique request.
-        """
-        worker_list: [int] = []
-        request: int = input_queue.get()  # Will turn to Datapackage
-        tasks: set[asyncio.Task] = set()
-        while request:
-            print("Request: ", request)
-            if request in worker_list:  # Will turn to request.mode
-                print("Producer already started")
-                pass
-            else:
-                print("Start producer")
-                worker_list.append(request)  # Will turn to request.mode
-                tasks.add(
-                    asyncio.create_task(self.producer(result_queue, input_queue, request, shutdown_event))
-                )
-            request = input_queue.get()
-            print("Next request: ", request, "\n")
-        print("Starting producers finished")
-
-        await asyncio.gather(*tasks)
-
     async def input_consumer(
             self,
-            input_queue: janus.SyncQueue[int],
-            expected_reply: dict[str, [int]]
+            input_queue: janus.AsyncQueue[MeasureMode],
+            expected_reply: dict[str: [int]]
     ) -> None:
-        request_id = 0
-        request = input_queue.get()
-        while request:
-            request = str(request)
-            print("Request: ", request)
-            if request in expected_reply:  # Will turn to request.mode
-                print("Add request id to id list")
-                expected_reply[request].append(request_id)
-                print("expect:", expected_reply[request])
+        loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
+        jobs: set[asyncio.Future] = set()
+        while "Input queue not empty":
+            request: MeasureMode = await input_queue.get()
+            fut: asyncio.Future = loop.create_future()
+            if request in expected_reply:
+                expected_reply[request].append(fut)
             else:
-                print("Add request to expected reply")
-                expected_reply[request] = [request_id]
-                print("expect:", expected_reply[request])
-            request = input_queue.get()
-            request_id += 1
-            print("Next request: ", request, "\n")
+                expected_reply[request] = [fut]
+            jobs.add(fut)
+            if input_queue.empty():
+                break
+        print('foo')
+        await asyncio.gather(*jobs)
+        print('bar')
+        await input_queue.put(None)
 
     async def main(self) -> None:
         """
         Manages synchronous and asynchronous part of the queue.
         """
+        print("--------------------------------------------------")  # Separates NetAccessServer messages from control.
         result_queue: janus.Queue[DataPackage] = janus.Queue()
-        shutdown_event: threading.Event = threading.Event()
-        input_queue: janus.Queue[DataPackage] = janus.Queue()
-        future_queue: janus.Queue[asyncio.Future] = janus.Queue()
-        self.helper(input_queue.sync_q, future_queue.sync_q)
         expected_reply = {}
-        async with AsyncExitStack() as stack:
-            tasks: set[asyncio.Task] = set()
-            stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
+        # Simulating input ------------
+        input_queue: janus.Queue[DataPackage] = janus.Queue()
+        self.helper(input_queue.sync_q)
+        # job_queue: janus.Queue[asyncio.Future] = janus.Queue()
+        # -----------------------------
+        print("--------------------------------------------------")
+        # async with AsyncExitStack() as stack:
+        tasks: set[asyncio.Task] = set()
+        # stack.push_async_callback(self.cancel_tasks, tasks, shutdown_event)
 
-            input_consumer = asyncio.create_task(self.input_consumer(
-                input_queue.sync_q,
-                expected_reply
-            ))
-            tasks.add(input_consumer)
+        input_consumer = asyncio.create_task(self.input_consumer(input_queue.async_q, expected_reply))
+        tasks.add(input_consumer)
 
-            producer = asyncio.create_task(self.producer(
-                result_queue.sync_q,
-                future_queue.sync_q,
-                shutdown_event
-            ))
-            tasks.add(producer)
+        producer = asyncio.create_task(self.producer(
+            result_queue.sync_q,
+            input_queue.sync_q
+        ))
+        tasks.add(producer)
 
-            consumer = asyncio.create_task(self.async_coro(result_queue.async_q, expected_reply))
-            tasks.add(consumer)
+        result_consumer = asyncio.create_task(self.result_consumer(
+            result_queue.async_q,
+            expected_reply
+        ))
+        tasks.add(result_consumer)
 
-            await asyncio.gather(*tasks)
+        await asyncio.gather(*tasks)
 
     def __init__(self, ver, dll_path: str, length=5) -> None:
         # Set attributes

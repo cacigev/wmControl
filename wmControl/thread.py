@@ -71,8 +71,7 @@ class Worker:
     def run(
             self,
             output_queue: janus.SyncQueue[DataPackage],
-            future_queue: [asyncio.Future],
-            shutdown_event: Event
+            job_queue: janus.SyncQueue[MeasureMode]
     ) -> None:
         """
         Producer for wavemeter data.
@@ -84,10 +83,8 @@ class Worker:
         ----------
         output_queue: janus.SyncQueue[DataPackage]
             The synchronous part of the queue.
-        future_queue: janus.SyncQueue[DataPackage]
+        job_queue: janus.SyncQueue[MeasureMode]
             Expected measurements.
-        shutdown_event: Event
-            Shutdown event.
         """
 
         cb_pointer: ctypes.POINTER = self._create_callback(output_queue)
@@ -96,11 +93,13 @@ class Worker:
         self.__logger.info("Connected to host")
 
         try:
-            future = future_queue.get()  # last element of queue None
-            while future:
-                if future.done():  # set_result setzen
-                    future = future_queue.get()
-            shutdown_event.wait()
+            print('here')
+            while "Jobs not done":
+                # synchronous part of job_queue -> job_queue.get() awaits an element
+                job = job_queue.get()  # last element of queue None
+                if job is None:
+                    job_queue.join()
+                    break
             # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
             self.__logger.info("Removed callback.")
@@ -168,37 +167,3 @@ class Worker:
     def __init__(self, ver):
         self.__logger = logging.getLogger(__name__)
         self._version = ver
-
-class InputWorker:
-
-    def run(self, input_queue, request_queue):
-        """
-
-        """
-        helper_queue = janus.Queue()
-        request = input_queue.get()
-        last_request = request
-        while request:
-            # Picking relevant information from helper queue and put it in output queue.
-            status = helper_queue.get()
-            if request == status.mode:
-                # print('run:', i, status)
-                # i += 1
-                request_queue.put(status)
-                request = input_queue.get()
-        # while request:
-        #     if request == last_request:
-        #         print(request)
-        #         helper_queue.sync_q.put(request)
-        #         request = input_queue.get()
-        #     else:
-        #         print("End of Queue: ", request)
-        #         helper_queue.sync_q.put(None)
-        #         request_queue.put(helper_queue)
-        #
-        #         helper_queue = janus.Queue()
-        #         helper_queue.sync_q.put(request)
-        #         last_request = request
-        #
-        #         request = input_queue.get()
-        print("First object of first queue: ", request_queue.get().get())
