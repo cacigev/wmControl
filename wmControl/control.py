@@ -56,15 +56,17 @@ class Wavemeter:
         expected_reply: dict[str, [int]]
             Holds expected data and id of dedicated request
         """
-        # i = 0
+        i = 0
         try:
             while "not terminated":
                 reply = await result_queue.get()
                 try:
+                    # print(*expected_reply)
                     if reply.mode in expected_reply:
-                        value: asyncio.Future = await expected_reply[reply.mode].pop(0)
+                        value: asyncio.Future = expected_reply[reply.mode].pop(0)
                         value.set_result(reply)
-                        print("%s", value)
+                        print(i, "%s" % value)
+                        i += 1
                 except IndexError:
                     expected_reply.pop(reply.mode)
                 # print("consumer:", i, reply)
