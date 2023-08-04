@@ -1,5 +1,5 @@
 """
-Contains the related classes for wavemeter control.
+Contains the related class for wavemeter control.
 """
 
 import asyncio
@@ -12,7 +12,6 @@ from typing import Set
 import janus
 
 from wmControl import wlmData
-from .data_factory import data_factory
 from wmControl.thread import Worker
 from wmControl.wlmConst import DataPackage
 from wmControl.wlmConst import MeasureMode
@@ -36,6 +35,10 @@ class Wavemeter:
     dll_path : str
         The directory path where the wlmData.dll is.
     """
+    ###########
+    # __logger auch in docstring?
+    #
+    #
 
     version = 0  # 0 should call the first activated WM, but don't rely on that.
 
@@ -65,13 +68,10 @@ class Wavemeter:
                     if reply.mode in expected_reply:
                         value: asyncio.Future = expected_reply[reply.mode].pop(0)
                         value.set_result(reply)
-                        print(i, "%s" % value)
+                        print(f"{i:04}: {reply}")
                         i += 1
                 except IndexError:
                     expected_reply.pop(reply.mode)
-                # print("consumer:", i, reply)
-                # i += 1
-                # result_queue.task_done()
         finally:
             self.__logger.info("Consumer shut down.")
 
@@ -99,10 +99,11 @@ class Wavemeter:
         except Exception:  # pylint: disable=broad-except
             self.__logger.exception("Error during shutdown of the controller.")
 
-    async def producer(self,
-                       result_queue: janus.SyncQueue[DataPackage],
-                       job_queue: janus.SyncQueue[DataPackage]
-                       ) -> None:
+    async def producer(
+            self,
+            result_queue: janus.SyncQueue[DataPackage],
+            job_queue: janus.SyncQueue[DataPackage]
+    ) -> None:
         """
         Producer of queue.
 
@@ -110,12 +111,10 @@ class Wavemeter:
 
         Parameter
         ---------
-        result_queue
+        result_queue : janus.SyncQueue[DataPackage]
             Data queue of relevant information.
-        input_queue : janus.AsyncQueue[DataPackage]
+        job_queue : janus.SyncQueue[DataPackage]
             Request of the user.
-        helper_queue : janus.AsyncQueue[DataPackage]
-            Temporarily stores data. Internal use only.
         """
         sync_worker = Worker(self.version)
         try:
@@ -156,11 +155,40 @@ class Wavemeter:
         input_queue.put(MeasureMode.cmiWavelength8)  # 10
         input_queue.put(MeasureMode.cmiWavelength8)  # 11
 
+        input_queue.put(MeasureMode.cmiWavelength8)  # 0
+        input_queue.put(MeasureMode.cmiWavelength8)  # 1
+        input_queue.put(MeasureMode.cmiWavelength8)  # 2
+
+        input_queue.put(MeasureMode.cmiTemperature)  # 3
+        input_queue.put(MeasureMode.cmiWavelength8)  # 4
+        input_queue.put(MeasureMode.cmiWavelength8)  # 5
+
+        input_queue.put(MeasureMode.cmiWavelength8)  # 6
+        input_queue.put(MeasureMode.cmiWavelength1)  # 7
+        input_queue.put(MeasureMode.cmiTemperature)  # 8
+
+        input_queue.put(MeasureMode.cmiWavelength8)  # 9
+        input_queue.put(MeasureMode.cmiWavelength8)  # 10
+        input_queue.put(MeasureMode.cmiWavelength8)  # 11
+
     async def input_consumer(
             self,
             input_queue: janus.AsyncQueue[MeasureMode],
-            expected_reply: dict[str: [int]]
+            expected_reply: dict[MeasureMode: [asyncio.Future]]
     ) -> None:
+        """
+        Consumer of input queue.
+
+        Takes the input queue and creates a dictionary of expected replys.
+
+        Parameter
+        ---------
+        input_queue : janus.AsyncQueue[MeasureMode]
+            Queue created from user input.
+        expected_reply : dict[MeasureMode: [asyncio.Future]]
+            Keys are holding MeasureMode respectively measurement of interest.
+            Their values are a list of futures representing measurements not yet done.
+        """
         loop: asyncio.AbstractEventLoop = asyncio.get_running_loop()
         jobs: set[asyncio.Future] = set()
         while "Input queue not empty":
@@ -173,10 +201,11 @@ class Wavemeter:
             jobs.add(fut)
             if input_queue.empty():
                 break
-        print('foo')
+
         await asyncio.gather(*jobs)
-        print('bar')
-        await input_queue.put(None)
+
+        input_queue.put_nowait(None)
+        print("Input consumer finished")
 
     async def main(self) -> None:
         """
@@ -188,7 +217,6 @@ class Wavemeter:
         # Simulating input ------------
         input_queue: janus.Queue[DataPackage] = janus.Queue()
         self.helper(input_queue.sync_q)
-        # job_queue: janus.Queue[asyncio.Future] = janus.Queue()
         # -----------------------------
         print("--------------------------------------------------")
         # async with AsyncExitStack() as stack:
@@ -198,16 +226,10 @@ class Wavemeter:
         input_consumer = asyncio.create_task(self.input_consumer(input_queue.async_q, expected_reply))
         tasks.add(input_consumer)
 
-        producer = asyncio.create_task(self.producer(
-            result_queue.sync_q,
-            input_queue.sync_q
-        ))
+        producer = asyncio.create_task(self.producer(result_queue.sync_q, input_queue.sync_q))
         tasks.add(producer)
 
-        result_consumer = asyncio.create_task(self.result_consumer(
-            result_queue.async_q,
-            expected_reply
-        ))
+        result_consumer = asyncio.create_task(self.result_consumer(result_queue.async_q, expected_reply))
         tasks.add(result_consumer)
 
         await asyncio.gather(*tasks)

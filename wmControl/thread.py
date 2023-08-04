@@ -1,4 +1,15 @@
-import asyncio
+"""
+Handles callback thread.
+
+Creates a thread which fills the result queue until there are no more user requests.
+
+Attributes
+----------
+CALLBACKTYPE : ctypes.CFUNCTYPE
+    Defines a callbacktype for the _create_callback function.
+    Needed for WM function (respectively dll funtion) wlmData.dll.Instantiate(*args).
+"""
+
 import ctypes
 import logging
 from threading import Event
@@ -10,7 +21,7 @@ from .data_factory import data_factory
 from .wlmConst import DataPackage
 from .wlmConst import MeasureMode
 
-callbacktype = ctypes.CFUNCTYPE(
+CALLBACKTYPE = ctypes.CFUNCTYPE(
     None,
     ctypes.c_int32,
     ctypes.c_int32,
@@ -23,6 +34,11 @@ callbacktype = ctypes.CFUNCTYPE(
 class Worker:
     """
     Managing the synchronous threads from the wavemeter.
+
+    Parameters
+    ----------
+    ver : int
+        Version of the WM. Works like a serial number just not named like it.
     """
 
     def _create_callback(self, output_queue: janus.SyncQueue[DataPackage]) -> ctypes.POINTER:
@@ -64,7 +80,7 @@ class Worker:
             else:
                 output_queue.put(package)
 
-        cb_pointer: ctypes.POINTER = callbacktype(callback)
+        cb_pointer: ctypes.POINTER = CALLBACKTYPE(callback)
 
         return cb_pointer
 
@@ -82,7 +98,7 @@ class Worker:
         Parameters
         ----------
         output_queue: janus.SyncQueue[DataPackage]
-            The synchronous part of the queue.
+            The synchronous part of the result queue.
         job_queue: janus.SyncQueue[MeasureMode]
             Expected measurements.
         """
@@ -93,12 +109,11 @@ class Worker:
         self.__logger.info("Connected to host")
 
         try:
-            print('here')
             while "Jobs not done":
                 # synchronous part of job_queue -> job_queue.get() awaits an element
                 job = job_queue.get()  # last element of queue None
                 if job is None:
-                    job_queue.join()
+                    # job_queue.join()
                     break
             # There is no more work to be done. Terminate now.
             wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
