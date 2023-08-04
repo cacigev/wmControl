@@ -1,15 +1,16 @@
 #
 # wlmData API function bindings generated from wlmData.h
 #
+from __future__ import annotations
 
 import ctypes
 import os
+from decimal import Decimal
 
-dll = None
+from wmControl.wlmConst import WavemeterType, wavemeter_exceptions
 
 
 def LoadDLL(path):
-    global dll
     dll = ctypes.WinDLL(path) if os.name == "nt" else ctypes.CDLL(path)
 
     # ***********  Functions for general usage  ****************************
@@ -829,3 +830,61 @@ def LoadDLL(path):
     dll.SetScale.restype = ctypes.c_int32
 
     return dll
+
+
+def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
+    assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
+    result = dll.GetWavelengthNum(channel + 1, 0.0)
+    if result < 0:
+        raise wavemeter_exceptions[result]
+
+    return Decimal(result)
+
+
+def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
+    assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
+    result = dll.GetFrequencyNum(channel + 1, 0.0)
+    if result < 0:
+        raise wavemeter_exceptions[result]
+
+    return Decimal(result)
+
+
+def get_switch_mode(dll: ctypes.WinDLL | ctypes.CDLL) -> bool:
+    return bool(dll.GetSwitcherMode(0))
+
+
+def set_switch_mode(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
+    result = wavemeter_exceptions.get(dll.SetSwitcherMode(int(enable)))
+    if result < 0:
+        raise wavemeter_exceptions[result]
+
+
+def set_channel(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> None:
+    assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
+    result = dll.SetSwitcherChannel(channel + 1)
+    if result < 0:
+        raise wavemeter_exceptions[result]
+
+
+def get_channel(dll: ctypes.WinDLL | ctypes.CDLL) -> int:
+    return dll.GetSwitcherChannel(0) - 1
+
+
+def get_wavemeter_count(dll: ctypes.WinDLL | ctypes.CDLL):
+    return dll.GetWLMCount(0)
+
+
+def set_active_wavemeter(dll: ctypes.WinDLL | ctypes.CDLL, serial: int) -> None:
+    dll.PresetWLMIndex(serial)
+
+
+def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType, int, tuple[int, int]]:
+    wavemeter_type = dll.GetWLMVersion(0)
+    if wavemeter_type < 0:
+        raise wavemeter_exceptions[wavemeter_type]
+    serial = dll.GetWLMVersion(1)
+    software_revision = dll.GetWLMVersion(2)
+    compilation_number = dll.GetWLMVersion(3)
+
+    return WavemeterType(wavemeter_type), serial, (software_revision, compilation_number)

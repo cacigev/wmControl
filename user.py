@@ -7,7 +7,7 @@ import sys
 
 from decouple import config
 
-from wmControl import control
+from wmControl.wavemeter import Wavemeter
 
 
 def parse_log_level(log_level: int | str) -> int:
@@ -32,6 +32,20 @@ def parse_log_level(log_level: int | str) -> int:
     return logging.INFO  # default log level
 
 
+async def main():
+    dll_path = None
+    if sys.platform == "win32":
+        dll_path = "./wmControl/wlmData.dll"
+    elif sys.platform == "linux":
+        dll_path = "./wmControl/libwlmData.so"
+
+    # 4711: Quips B 192.168.1.240
+    async with Wavemeter(4711, dll_path=dll_path) as wavemeter:
+        await wavemeter.demo()
+        async for event in wavemeter.read_events():
+            print(event)
+
+
 logging.basicConfig(
     # format="%(asctime)s.%(msecs)03d %(levelname)-8s %(message)s",
     format="%(message)s",
@@ -39,16 +53,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-
-dll_path = None
-if sys.platform == "win32":
-    dll_path = "./wmControl/wlmData.dll"
-elif sys.platform == "linux":
-    dll_path = "./wmControl/libwlmData.so"
-
-wm = control.Wavemeter(4711, dll_path=dll_path)  # Quips B 192.168.1.240
-
 try:
-    asyncio.run(wm.main())
+    asyncio.run(main())
 except KeyboardInterrupt:
     logging.getLogger(__name__).info("Application shut down.")

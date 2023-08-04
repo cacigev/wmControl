@@ -3,7 +3,7 @@
 #
 from dataclasses import dataclass
 from decimal import Decimal
-from enum import IntEnum
+from enum import Enum, IntEnum
 
 # Instantiating Constants for 'RFC' parameter
 cInstCheckForWLM = -1
@@ -52,6 +52,13 @@ ResERR_OnlyInPulseMode = -23
 ResERR_NotInSwitchMode = -24
 ResERR_OnlyInSwitchMode = -25
 ResERR_TCPErr = -26
+
+
+class WavemeterType(Enum):
+    lsa = 5
+    ws6 = 6
+    ws7 = 7
+    ws8 = 8
 
 
 class MeasureMode(IntEnum):
@@ -2207,3 +2214,18 @@ class Exposure28(Exposure):
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+
+
+class WavemeterExection(Exception):
+    pass
+
+
+class ResourceNotAvailable(WavemeterExection):
+    pass
+
+
+class NoWavemeterAvailable(WavemeterExection):
+    pass
+
+
+wavemeter_exceptions = {ErrWlmMissing: NoWavemeterAvailable, ResERR_NotAvailable: ResourceNotAvailable}
