@@ -2,28 +2,126 @@ from __future__ import annotations
 
 from typing import Type
 
-from wmControl.wlmConst import DataPackage, MeasureMode
+# IntVal imports
 # 330
 # DblVal imports
-from wmControl.wlmConst import (Wavelength1, Wavelength2, Wavelength3, Wavelength4, Wavelength5, Wavelength6,
-                                Wavelength7, Wavelength8)
-from wmControl.wlmConst import Temperature, Distance, Linewidth, AnalogIn, AnalogOut
-from wmControl.wlmConst import PID_P, PID_I, PID_D, PID_T, PID_dt
-from wmControl.wlmConst import ExternalInput, DeviationSensitivityFactor
-# IntVal imports
-from wmControl.wlmConst import (FastMode, WideMode, ResultMode, ExposureMode, PulseMode, DisplayMode,
-                                AnalysisMode, SwitcherMode)
-from wmControl.wlmConst import Reduced, Range, Link, Operation, SwitcherChannel, PIDCourse, DeviationSensitivityDim
-from wmControl.wlmConst import Min1, Min11, Min12, Min13, Min14, Min15, Min16, Min17, Min18, Min19
-from wmControl.wlmConst import Max1, Max11, Max12, Max13, Max14, Max15, Max16, Max17, Max18, Max19
-from wmControl.wlmConst import Avg1, Avg11, Avg12, Avg13, Avg14, Avg15, Avg16, Avg17, Avg18, Avg19
-from wmControl.wlmConst import Min2, Min21, Min22, Min23, Min24, Min25, Min26, Min27, Min28, Min29
-from wmControl.wlmConst import Max2, Max21, Max22, Max23, Max24, Max25, Max26, Max27, Max28, Max29
-from wmControl.wlmConst import Avg2, Avg21, Avg22, Avg23, Avg24, Avg25, Avg26, Avg27, Avg28, Avg29
-from wmControl.wlmConst import (Exposure1, Exposure11, Exposure12, Exposure13, Exposure14, Exposure15,
-                                Exposure16, Exposure17, Exposure18)
-from wmControl.wlmConst import (Exposure2, Exposure21, Exposure22, Exposure23, Exposure24, Exposure25,
-                                Exposure26, Exposure27, Exposure28)
+from wmControl.wlmConst import (
+    PID_D,
+    PID_I,
+    PID_P,
+    PID_T,
+    AnalogIn,
+    AnalogOut,
+    AnalysisMode,
+    Avg1,
+    Avg2,
+    Avg11,
+    Avg12,
+    Avg13,
+    Avg14,
+    Avg15,
+    Avg16,
+    Avg17,
+    Avg18,
+    Avg19,
+    Avg21,
+    Avg22,
+    Avg23,
+    Avg24,
+    Avg25,
+    Avg26,
+    Avg27,
+    Avg28,
+    Avg29,
+    DataPackage,
+    DeviationSensitivityDim,
+    DeviationSensitivityFactor,
+    DisplayMode,
+    Distance,
+    Exposure1,
+    Exposure2,
+    Exposure11,
+    Exposure12,
+    Exposure13,
+    Exposure14,
+    Exposure15,
+    Exposure16,
+    Exposure17,
+    Exposure18,
+    Exposure21,
+    Exposure22,
+    Exposure23,
+    Exposure24,
+    Exposure25,
+    Exposure26,
+    Exposure27,
+    Exposure28,
+    ExposureMode,
+    ExternalInput,
+    FastMode,
+    Linewidth,
+    Link,
+    Max1,
+    Max2,
+    Max11,
+    Max12,
+    Max13,
+    Max14,
+    Max15,
+    Max16,
+    Max17,
+    Max18,
+    Max19,
+    Max21,
+    Max22,
+    Max23,
+    Max24,
+    Max25,
+    Max26,
+    Max27,
+    Max28,
+    Max29,
+    MeasureMode,
+    Min1,
+    Min2,
+    Min11,
+    Min12,
+    Min13,
+    Min14,
+    Min15,
+    Min16,
+    Min17,
+    Min18,
+    Min19,
+    Min21,
+    Min22,
+    Min23,
+    Min24,
+    Min25,
+    Min26,
+    Min27,
+    Min28,
+    Min29,
+    Operation,
+    PID_dt,
+    PIDCourse,
+    PulseMode,
+    Range,
+    Reduced,
+    ResultMode,
+    SwitcherChannel,
+    SwitcherMode,
+    Temperature,
+    Wavelength1,
+    Wavelength2,
+    Wavelength3,
+    Wavelength4,
+    Wavelength5,
+    Wavelength6,
+    Wavelength7,
+    Wavelength8,
+    WideMode,
+)
 
 
 class DataTypeFactory:
@@ -169,5 +267,3 @@ data_factory.register(Exposure25)
 data_factory.register(Exposure26)
 data_factory.register(Exposure27)
 data_factory.register(Exposure28)
-
-#print(data_factory._DataTypeFactory__registered_data_types)

@@ -1283,7 +1283,7 @@ class SwitcherChannel(DataPackage):
     value: int
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        self.value = int_val
+        self.value = int_val - 1
         super().__init__(product_id=version)
 
     def __str__(self):
@@ -1365,7 +1365,7 @@ class Min1(Min):
     mode = MeasureMode.cmiMin1
 
     def __init__(self, version, int_val):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1375,7 +1375,7 @@ class Min2(Min):
     mode = MeasureMode.cmiMin2
 
     def __init__(self, version, int_val):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1385,7 +1385,7 @@ class Min11(Min):
     mode = MeasureMode.cmiMin11
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1395,7 +1395,7 @@ class Min12(Min):
     mode = MeasureMode.cmiMin12
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1405,7 +1405,7 @@ class Min13(Min):
     mode = MeasureMode.cmiMin13
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1415,7 +1415,7 @@ class Min14(Min):
     mode = MeasureMode.cmiMin14
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1425,7 +1425,7 @@ class Min15(Min):
     mode = MeasureMode.cmiMin15
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1435,7 +1435,7 @@ class Min16(Min):
     mode = MeasureMode.cmiMin16
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1445,7 +1445,7 @@ class Min17(Min):
     mode = MeasureMode.cmiMin17
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1455,7 +1455,7 @@ class Min18(Min):
     mode = MeasureMode.cmiMin18
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1465,7 +1465,7 @@ class Min19(Min):
     mode = MeasureMode.cmiMin19
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1475,7 +1475,7 @@ class Min21(Min):
     mode = MeasureMode.cmiMin21
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1485,7 +1485,7 @@ class Min22(Min):
     mode = MeasureMode.cmiMin22
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1495,7 +1495,7 @@ class Min23(Min):
     mode = MeasureMode.cmiMin23
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1505,7 +1505,7 @@ class Min24(Min):
     mode = MeasureMode.cmiMin24
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1515,7 +1515,7 @@ class Min25(Min):
     mode = MeasureMode.cmiMin25
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1525,7 +1525,7 @@ class Min26(Min):
     mode = MeasureMode.cmiMin26
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1535,7 +1535,7 @@ class Min27(Min):
     mode = MeasureMode.cmiMin27
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1545,7 +1545,7 @@ class Min28(Min):
     mode = MeasureMode.cmiMin28
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1555,7 +1555,7 @@ class Min29(Min):
     mode = MeasureMode.cmiMin29
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
 
 
 @dataclass
@@ -1591,7 +1591,7 @@ class Max1(Max):
     mode = MeasureMode.cmiMax1
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1601,7 +1601,7 @@ class Max2(Max):
     mode = MeasureMode.cmiMax2
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1611,7 +1611,7 @@ class Max11(Max):
     mode = MeasureMode.cmiMax11
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1621,7 +1621,7 @@ class Max12(Max):
     mode = MeasureMode.cmiMax12
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1631,7 +1631,7 @@ class Max13(Max):
     mode = MeasureMode.cmiMax13
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1641,7 +1641,7 @@ class Max14(Max):
     mode = MeasureMode.cmiMax14
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1651,7 +1651,7 @@ class Max15(Max):
     mode = MeasureMode.cmiMax15
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1661,7 +1661,7 @@ class Max16(Max):
     mode = MeasureMode.cmiMax16
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1671,7 +1671,7 @@ class Max17(Max):
     mode = MeasureMode.cmiMax17
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1681,7 +1681,7 @@ class Max18(Max):
     mode = MeasureMode.cmiMax18
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1691,7 +1691,7 @@ class Max19(Max):
     mode = MeasureMode.cmiMax19
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1701,7 +1701,7 @@ class Max21(Max):
     mode = MeasureMode.cmiMax21
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1711,7 +1711,7 @@ class Max22(Max):
     mode = MeasureMode.cmiMax22
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1721,7 +1721,7 @@ class Max23(Max):
     mode = MeasureMode.cmiMax23
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1731,7 +1731,7 @@ class Max24(Max):
     mode = MeasureMode.cmiMax24
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1741,7 +1741,7 @@ class Max25(Max):
     mode = MeasureMode.cmiMax25
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1751,7 +1751,7 @@ class Max26(Max):
     mode = MeasureMode.cmiMax26
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1761,7 +1761,7 @@ class Max27(Max):
     mode = MeasureMode.cmiMax27
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1771,7 +1771,7 @@ class Max28(Max):
     mode = MeasureMode.cmiMax28
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1781,7 +1781,7 @@ class Max29(Max):
     mode = MeasureMode.cmiMax29
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
 
 
 @dataclass
@@ -1817,7 +1817,7 @@ class Avg1(Avg):
     mode = MeasureMode.cmiPatternAvg1
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1827,7 +1827,7 @@ class Avg2(Avg):
     mode = MeasureMode.cmiPatternAvg2
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1837,7 +1837,7 @@ class Avg11(Avg):
     mode = MeasureMode.cmiAvg11
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1847,7 +1847,7 @@ class Avg12(Avg):
     mode = MeasureMode.cmiAvg12
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1857,7 +1857,7 @@ class Avg13(Avg):
     mode = MeasureMode.cmiAvg13
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1867,7 +1867,7 @@ class Avg14(Avg):
     mode = MeasureMode.cmiAvg14
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1877,7 +1877,7 @@ class Avg15(Avg):
     mode = MeasureMode.cmiAvg15
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1887,7 +1887,7 @@ class Avg16(Avg):
     mode = MeasureMode.cmiAvg16
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1897,7 +1897,7 @@ class Avg17(Avg):
     mode = MeasureMode.cmiAvg17
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1907,7 +1907,7 @@ class Avg18(Avg):
     mode = MeasureMode.cmiAvg18
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1917,7 +1917,7 @@ class Avg19(Avg):
     mode = MeasureMode.cmiAvg19
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=0)
 
 
 @dataclass(init=False)
@@ -1927,7 +1927,7 @@ class Avg21(Avg):
     mode = MeasureMode.cmiAvg21
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1937,7 +1937,7 @@ class Avg22(Avg):
     mode = MeasureMode.cmiAvg22
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=1, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1947,7 +1947,7 @@ class Avg23(Avg):
     mode = MeasureMode.cmiAvg23
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=2, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1957,7 +1957,7 @@ class Avg24(Avg):
     mode = MeasureMode.cmiAvg24
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=3, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1967,7 +1967,7 @@ class Avg25(Avg):
     mode = MeasureMode.cmiAvg25
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=4, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1977,7 +1977,7 @@ class Avg26(Avg):
     mode = MeasureMode.cmiAvg26
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=5, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1987,7 +1987,7 @@ class Avg27(Avg):
     mode = MeasureMode.cmiAvg27
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=6, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -1997,7 +1997,7 @@ class Avg28(Avg):
     mode = MeasureMode.cmiAvg28
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=7, ccd_array=1)
 
 
 @dataclass(init=False)
@@ -2007,7 +2007,7 @@ class Avg29(Avg):
     mode = MeasureMode.cmiAvg29
 
     def __init__(self, version, int_val, *_args, **_kwargs):
-        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+        super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=1)
 
 
 @dataclass
@@ -2216,16 +2216,29 @@ class Exposure28(Exposure):
         super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
 
 
-class WavemeterExection(Exception):
+class WavemeterException(Exception):
     pass
 
 
-class ResourceNotAvailable(WavemeterExection):
+class ResourceNotAvailable(WavemeterException):
     pass
 
 
-class NoWavemeterAvailable(WavemeterExection):
+class NoWavemeterAvailable(WavemeterException):
     pass
 
 
-wavemeter_exceptions = {ErrWlmMissing: NoWavemeterAvailable, ResERR_NotAvailable: ResourceNotAvailable}
+class LowSignalError(WavemeterException):
+    pass
+
+
+class NoValueError(WavemeterException):
+    pass
+
+
+wavemeter_exceptions = {
+    ErrNoValue: NoValueError,
+    ErrLowSignal: LowSignalError,
+    ErrWlmMissing: NoWavemeterAvailable,
+    ResERR_NotAvailable: ResourceNotAvailable,
+}

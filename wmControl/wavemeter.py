@@ -195,16 +195,13 @@ class Wavemeter:
 
     async def demo(self) -> None:
         """
-        Manages synchronous and asynchronous part of the queue.
+        Simulate some inputs
         """
-        # simulate some inputs
         jobs = [
-            # self.set_switch_mode(True),
             self.get_wavemeter_info(),
-            self.get_switch_mode(),
-            # self.set_channel(1),
-            self.get_channel(),
+            self.get_wavelength(0),
             self.get_wavelength(1),
-            self.get_frequency(1),
+            # self.get_wavelength(2),
+            # self.get_wavelength(3),
         ]
         print(await asyncio.gather(*jobs))
