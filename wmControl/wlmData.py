@@ -9,8 +9,11 @@ from decimal import Decimal
 
 from wmControl.wlmConst import WavemeterType, wavemeter_exceptions
 
+dll: ctypes.WinDLL | ctypes.CDLL | None = None
+
 
 def LoadDLL(path):
+    global dll
     dll = ctypes.WinDLL(path) if os.name == "nt" else ctypes.CDLL(path)
 
     # ***********  Functions for general usage  ****************************

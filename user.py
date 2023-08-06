@@ -40,9 +40,11 @@ async def main():
         dll_path = "./wmControl/libwlmData.so"
 
     # 4711: Quips B 192.168.1.240
-    async with Wavemeter(4711, dll_path=dll_path) as wavemeter:
-        await wavemeter.demo()
-        async for event in wavemeter.read_events():
+    # 536: WS-6
+    async with Wavemeter(4711, dll_path=dll_path) as ws8, Wavemeter(536, dll_path=dll_path) as ws6:
+        await ws6.demo()
+        await ws8.demo()
+        async for event in ws6.read_events():
             print(event)
 
 
