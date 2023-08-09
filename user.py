@@ -5,10 +5,18 @@ import asyncio
 import logging
 import sys
 
+from bliss.comm.scpi import FuncCmd, ErrCmd, IntCmd, Commands
 from decouple import config
 
 from wmControl.wavemeter import Wavemeter
 
+
+dll_path = None
+commands = None
+if sys.platform == "win32":
+    dll_path = "./wmControl/wlmData.dll"
+elif sys.platform == "linux":
+    dll_path = "./wmControl/libwlmData.so"
 
 def parse_log_level(log_level: int | str) -> int:
     """
@@ -32,20 +40,77 @@ def parse_log_level(log_level: int | str) -> int:
     return logging.INFO  # default log level
 
 
-async def main():
-    dll_path = None
-    if sys.platform == "win32":
-        dll_path = "./wmControl/wlmData.dll"
-    elif sys.platform == "linux":
-        dll_path = "./wmControl/libwlmData.so"
+def create_scpi_commands():
+    # commands = Commands({'*CLS': FuncCmd(doc='clear status'),
+    #                      '*RST': FuncCmd(doc='reset')
+    #                      })
+    #     c2 = Commands(c1, VOLTage=IntCmd()))
+    pass
 
-    # 4711: Quips B 192.168.1.240
-    # 536: WS-6
-    async with Wavemeter(4711, dll_path=dll_path) as ws8, Wavemeter(536, dll_path=dll_path) as ws6:
-        await ws6.demo()
-        await ws8.demo()
-        async for event in ws6.read_events():
-            print(event)
+
+async def decode_scpi(message: str):
+    """
+    Decoder of scpi orders.
+
+    Parameter
+    ---------
+    message : str
+        Message to decode.
+    """
+
+    pass
+
+
+async def handle_request(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    """
+    Handles client requests. Everytime called if a client connects to the server.
+
+    Parameter
+    ---------
+    reader : asyncio.StreamReader
+        Reader of the client.
+    writer : asyncio.StreamWriter
+        Writer of the client.
+    """
+    print('')
+    # Received requests.
+    while "EOF not reached":
+        data = await reader.readline()
+        if not data:  # <---------
+            break
+
+        message = data.decode().rstrip()
+        addr = writer.get_extra_info('peername')
+        print(f"Received {message!r} from {addr!r}")
+
+        # Decode SCPI request.
+        coro = await decode_scpi(message)
+
+        # Create new WM-object to answer the request.
+        # 4711: Quips B 192.168.1.240
+        # 536: WS-6
+        async with Wavemeter(4734, dll_path=dll_path) as ws8, Wavemeter(536, dll_path=dll_path) as ws6:
+            measurement = await ws8.get_wavelength(0)
+
+        print(f"Send: {measurement!r}")
+        writer.write(str(measurement).encode())
+        await writer.drain()
+
+    # Closing the connection.
+    print("Close the connection")
+    writer.close()
+    await writer.wait_closed()
+
+
+async def main():
+    server = await asyncio.start_server(
+        handle_request, '127.0.0.1', 8888)
+
+    address = ', '.join(str(sock.getsockname()) for sock in server.sockets)
+    print(f'Serving on {address}')
+
+    async with server:
+        await server.serve_forever()
 
 
 logging.basicConfig(
