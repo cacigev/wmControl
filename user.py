@@ -80,6 +80,7 @@ async def read_stream(reader: asyncio.StreamReader, requests: janus.AsyncQueue):
     # Decode SCPI request.
     # message = await decode_scpi(message)
 
+    print(f"Read: {message}")
     await requests.put(message)
 
 
@@ -99,8 +100,10 @@ async def listen_wm(wavemeter: Wavemeter, client_requests: janus.AsyncQueue, mea
     request = await client_requests.get()
     # wavemeter.request(*args) instead of wavemeter.get_wavelength(0)
 
+    print(f"Request: {request}")
     result = await wavemeter.get_wavelength(0)
-    measurements.put(result)
+    print(f"Result: {result}")
+    await measurements.put(result)
 
 
 async def write_stream(writer: asyncio.StreamWriter, measurements: janus.AsyncQueue):
@@ -114,6 +117,7 @@ async def write_stream(writer: asyncio.StreamWriter, measurements: janus.AsyncQu
     measurements: janus.AsyncQueue
         Queue holding the results.
     """
+    print('Writing.')
     result = await measurements.get()
 
     print(f"Send: {result!r}")
@@ -147,6 +151,7 @@ async def create_wm_server(product_id: int, host: str, port: int) -> None:
         writer : asyncio.StreamWriter
             Writer of the client.
         """
+        print('Got request.')
         client_requests: janus.Queue[str] = janus.Queue()  # Queue which gathers client requests.
         measurements: janus.Queue[Any] = janus.Queue()  # Queue with answers for client.
         tasks: set[asyncio.Task] = set()  # Set with TODOs.
@@ -161,27 +166,25 @@ async def create_wm_server(product_id: int, host: str, port: int) -> None:
         tasks.add(answer)
 
         # Publish answers
-        # ...
-        # measurements.get() to stream with write
         publish = asyncio.create_task(write_stream(writer, measurements.async_q))
         tasks.add(publish)
 
         await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
+        print('Tasks done.')
 
         # Closing the connection.
         print("Close the connection")
         writer.close()
         await writer.wait_closed()
 
-    wavemeter = Wavemeter(product_id, dll_path=dll_path)
+    async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
+        server = await asyncio.start_server(
+            handle_request, host, port)
+        address = ', '.join(str(sock.getsockname()) for sock in server.sockets)
+        print(f'Serving on {address}')
 
-    server = await asyncio.start_server(
-        handle_request, host, port)
-    address = ', '.join(str(sock.getsockname()) for sock in server.sockets)
-    print(f'Serving on {address}')
-
-    async with server:
-        await server.serve_forever()
+        async with server:
+            await server.serve_forever()
 
 
 async def main(wavemeter: [(int, int)]):
