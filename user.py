@@ -64,11 +64,64 @@ async def decode_scpi(message: str):
 
 
 async def read_stream(reader: asyncio.StreamReader, requests: janus.AsyncQueue):
+    """
+    Reads input from client out of stream.
 
-    pass
+    Parameter
+    ---------
+    reader: asyncio.StreamReader
+        Reader of client connection.
+    requests: janus.AsyncQueue
+        Queue receiving requests from stream.
+    """
+    # Read next line in stream.
+    request = await reader.readline()
+    message = request.decode().rstrip()
+    # Decode SCPI request.
+    # message = await decode_scpi(message)
+
+    await requests.put(message)
 
 
-async def create_wm_server(product_id: int, host: str, port: int) -> asyncio.Server:
+async def listen_wm(wavemeter: Wavemeter, client_requests: janus.AsyncQueue, measurements: janus.AsyncQueue) -> None:
+    """
+    Puts asked measurement results of a wavemeter into a queue.
+
+    Parameter
+    ---------
+    wavemeter: Wavemeter
+        Device the server listens.
+    client_requests: janus.AsyncQueue
+        Requests from clients.
+    measurements: janus.AsyncQueue
+        Results from wavemeter.
+    """
+    request = await client_requests.get()
+    # wavemeter.request(*args) instead of wavemeter.get_wavelength(0)
+
+    result = await wavemeter.get_wavelength(0)
+    measurements.put(result)
+
+
+async def write_stream(writer: asyncio.StreamWriter, measurements: janus.AsyncQueue):
+    """
+    Writes the results into the stream.
+
+    Parameter
+    ---------
+    writer: asyncio.StreamWriter
+        Writer of client connection.
+    measurements: janus.AsyncQueue
+        Queue holding the results.
+    """
+    result = await measurements.get()
+
+    print(f"Send: {result!r}")
+    writer.write(str(result).encode())
+    await writer.drain()
+
+
+async def create_wm_server(product_id: int, host: str, port: int) -> None:
     """
     Creates a server for every connected wavemeter.
 
@@ -97,25 +150,21 @@ async def create_wm_server(product_id: int, host: str, port: int) -> asyncio.Ser
         client_requests: janus.Queue[str] = janus.Queue()  # Queue which gathers client requests.
         measurements: janus.Queue[Any] = janus.Queue()  # Queue with answers for client.
         tasks: set[asyncio.Task] = set()  # Set with TODOs.
-        # Received requests.
-        # ...
-        # read out stream from client
 
-            # Decode SCPI request.
-            # coro = await decode_scpi(message)
+        # Received requests.
+        # Read input from client.
+        ask = asyncio.create_task(read_stream(reader, client_requests.async_q))
+        tasks.add(ask)
 
         # Create new WM-object to answer the request.
-        # ...
-        # listen for answers
-        # get request with client_requests.get()
-        # put answer in measurements.put()
+        answer = asyncio.create_task(listen_wm(wavemeter, client_requests.async_q, measurements.async_q))
+        tasks.add(answer)
 
-        # Scream answers
+        # Publish answers
         # ...
         # measurements.get() to stream with write
-        print(f"Send: {measurement!r}")
-        writer.write(str(measurement).encode())
-        await writer.drain()
+        publish = asyncio.create_task(write_stream(writer, measurements.async_q))
+        tasks.add(publish)
 
         await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
 
@@ -123,6 +172,8 @@ async def create_wm_server(product_id: int, host: str, port: int) -> asyncio.Ser
         print("Close the connection")
         writer.close()
         await writer.wait_closed()
+
+    wavemeter = Wavemeter(product_id, dll_path=dll_path)
 
     server = await asyncio.start_server(
         handle_request, host, port)
@@ -132,21 +183,14 @@ async def create_wm_server(product_id: int, host: str, port: int) -> asyncio.Ser
     async with server:
         await server.serve_forever()
 
-    return server
-
 
 async def main(wavemeter: [(int, int)]):
-    server_list: set[asyncio.Server] = set()
+    server_list: set[asyncio.Task] = set()
     for wm, port in wavemeter:
-        server = await create_wm_server(wm, '127.0.0.1', port)
-
+        server = asyncio.create_task(create_wm_server(wm, '127.0.0.1', port))
         server_list.add(server)
 
     await asyncio.gather(*server_list)
-
-
-    # async with server:
-    #     await server.serve_forever()
 
 
 logging.basicConfig(
