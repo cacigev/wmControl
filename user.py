@@ -43,7 +43,7 @@ def parse_log_level(log_level: int | str) -> int:
     return logging.INFO  # default log level
 
 
-def create_scpi_commands(wavemeter: Wavemeter) -> None:
+def create_scpi_commands(wavemeter: Wavemeter) -> None:  # Will move to init of wavemeter.
     """
     Creates for every wavemeter a dictionary of commands.
 
@@ -52,6 +52,7 @@ def create_scpi_commands(wavemeter: Wavemeter) -> None:
     wavemeter: Wavemeter
         Device which receive commands.
     """
+    # Config-file?
     wavemeter.commands = Commands({
         '*IDN': wavemeter.get_wavemeter_info(),
         '*RST': 'resetting device',  # No switcher mode active? Setting wavelength measurement to vacuum wavelength? ...
@@ -72,9 +73,12 @@ def decode_scpi(wavemeter: Wavemeter, message: str) -> Callable:
     message : str
         Message to decode.
     """
-    command = wavemeter.commands[message]
-
-    return command
+    try:
+        command = wavemeter.commands[message]
+        return command
+    except NameError:
+        logging.getLogger(__name__).info('Received unknown command.')
+        raise
 
 
 async def read_stream(
@@ -92,19 +96,19 @@ async def read_stream(
     requests: janus.AsyncQueue
         Queue receiving requests from stream.
     """
+    # while "Connection open":
     # Read next line in stream.
     request: bytes = await reader.readline()
     message: str = request.decode().rstrip()
     print(f"Read: {message}")
+    # if not message:
+    #     break
 
-    try:
-        # Decode SCPI request.
-        command: Callable = decode_scpi(wavemeter, message)
-        # Put the request into the request queue.
-        await requests.put(command)
-    except NameError:
-        logging.getLogger(__name__).info('Received unknown command.')
-        raise
+    # Decode SCPI request.
+    command: Callable = decode_scpi(wavemeter, message)
+    # Put the request into the request queue.
+    await requests.put(command)
+
 
 
 async def listen_wm(
@@ -198,7 +202,7 @@ async def create_wm_server(product_id: int, host: str, port: int) -> None:
         tasks.add(publish)
 
         try:
-            await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
+            await asyncio.gather(*tasks, return_exceptions=True)  # Gather tasks and wait for them to be done.
             print('Tasks done.')
         except Exception:
             raise
