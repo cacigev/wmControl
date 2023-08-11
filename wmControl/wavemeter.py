@@ -70,6 +70,7 @@ class Wavemeter:
 
     _active_id: int | None = None
     _lock: asyncio.Lock | None = None
+    commands: dict[str: Callable] | None = None
 
     @property
     def product_id(self) -> int:

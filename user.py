@@ -5,16 +5,17 @@ import asyncio
 import logging
 import sys
 
-from typing import Any
+from typing import Any, Callable
 # from bliss.comm.scpi import FuncCmd, ErrCmd, IntCmd, Commands
 from decouple import config
 import janus
+from scpi import Commands
 
 from wmControl.wavemeter import Wavemeter
+from wmControl.wlmConst import DataPackage
 
 
 dll_path = None
-commands = None
 if sys.platform == "win32":
     dll_path = "./wmControl/wlmData.dll"
 elif sys.platform == "linux":
@@ -42,15 +43,27 @@ def parse_log_level(log_level: int | str) -> int:
     return logging.INFO  # default log level
 
 
-def create_scpi_commands():
-    # commands = Commands({'*CLS': FuncCmd(doc='clear status'),
-    #                      '*RST': FuncCmd(doc='reset')
-    #                      })
-    #     c2 = Commands(c1, VOLTage=IntCmd()))
-    pass
+def create_scpi_commands(wavemeter: Wavemeter) -> None:
+    """
+    Creates for every wavemeter a dictionary of commands.
+
+    Parameter
+    ---------
+    wavemeter: Wavemeter
+        Device which receive commands.
+    """
+    wavemeter.commands = Commands({
+        '*IDN': wavemeter.get_wavemeter_info(),
+        '*RST': 'resetting device',  # No switcher mode active? Setting wavelength measurement to vacuum wavelength? ...
+        '*CLS': 'clear status',  # ?
+        '*READ': wavemeter.get_wavelength(0),
+        'test': 'test'
+         }
+    )
+    print(wavemeter.commands['test'])
 
 
-async def decode_scpi(message: str):
+def decode_scpi(wavemeter: Wavemeter, message: str) -> Callable:
     """
     Decoder of scpi orders.
 
@@ -59,11 +72,16 @@ async def decode_scpi(message: str):
     message : str
         Message to decode.
     """
+    command = wavemeter.commands[message]
 
-    pass
+    return command
 
 
-async def read_stream(reader: asyncio.StreamReader, requests: janus.AsyncQueue):
+async def read_stream(
+        wavemeter: Wavemeter,
+        reader: asyncio.StreamReader,
+        requests: janus.AsyncQueue[Callable]
+) -> None:
     """
     Reads input from client out of stream.
 
@@ -75,16 +93,24 @@ async def read_stream(reader: asyncio.StreamReader, requests: janus.AsyncQueue):
         Queue receiving requests from stream.
     """
     # Read next line in stream.
-    request = await reader.readline()
-    message = request.decode().rstrip()
-    # Decode SCPI request.
-    # message = await decode_scpi(message)
-
+    request: bytes = await reader.readline()
+    message: str = request.decode().rstrip()
     print(f"Read: {message}")
-    await requests.put(message)
+
+    try:
+        # Decode SCPI request.
+        command: Callable = decode_scpi(wavemeter, message)
+        # Put the request into the request queue.
+        await requests.put(command)
+    except NameError:
+        logging.getLogger(__name__).info('Received unknown command.')
+        raise
 
 
-async def listen_wm(wavemeter: Wavemeter, client_requests: janus.AsyncQueue, measurements: janus.AsyncQueue) -> None:
+async def listen_wm(
+        client_requests: janus.AsyncQueue[Callable],
+        measurements: janus.AsyncQueue[DataPackage]
+) -> None:
     """
     Puts asked measurement results of a wavemeter into a queue.
 
@@ -98,15 +124,17 @@ async def listen_wm(wavemeter: Wavemeter, client_requests: janus.AsyncQueue, mea
         Results from wavemeter.
     """
     request = await client_requests.get()
-    # wavemeter.request(*args) instead of wavemeter.get_wavelength(0)
 
     print(f"Request: {request}")
-    result = await wavemeter.get_wavelength(0)
+    result = await request
     print(f"Result: {result}")
     await measurements.put(result)
 
 
-async def write_stream(writer: asyncio.StreamWriter, measurements: janus.AsyncQueue):
+async def write_stream(
+        writer: asyncio.StreamWriter,
+        measurements: janus.AsyncQueue[DataPackage]
+) -> None:
     """
     Writes the results into the stream.
 
@@ -158,19 +186,22 @@ async def create_wm_server(product_id: int, host: str, port: int) -> None:
 
         # Received requests.
         # Read input from client.
-        ask = asyncio.create_task(read_stream(reader, client_requests.async_q))
+        ask = asyncio.create_task(read_stream(wavemeter, reader, client_requests.async_q))
         tasks.add(ask)
 
-        # Create new WM-object to answer the request.
-        answer = asyncio.create_task(listen_wm(wavemeter, client_requests.async_q, measurements.async_q))
+        # Listen for answers from wavemeter.
+        answer = asyncio.create_task(listen_wm(client_requests.async_q, measurements.async_q))
         tasks.add(answer)
 
-        # Publish answers
+        # Publish answers.
         publish = asyncio.create_task(write_stream(writer, measurements.async_q))
         tasks.add(publish)
 
-        await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
-        print('Tasks done.')
+        try:
+            await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
+            print('Tasks done.')
+        except Exception:
+            raise
 
         # Closing the connection.
         print("Close the connection")
@@ -178,6 +209,7 @@ async def create_wm_server(product_id: int, host: str, port: int) -> None:
         await writer.wait_closed()
 
     async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
+        create_scpi_commands(wavemeter)
         server = await asyncio.start_server(
             handle_request, host, port)
         address = ', '.join(str(sock.getsockname()) for sock in server.sockets)
