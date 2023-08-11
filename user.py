@@ -53,18 +53,70 @@ def create_scpi_commands(wavemeter: Wavemeter) -> None:  # Will move to init of 
         Device which receive commands.
     """
     # Config-file?
-    wavemeter.commands = Commands({
+    wavemeter.commands = Commands(
+        {
+        # Mandatory commands.
+        '*CLS': 'Clear Status Command',
+        '*ESE': 'Standard Event Status Enable Command',
+        '*ESR': 'Standard Event Status Register Query',
         '*IDN': wavemeter.get_wavemeter_info(),
-        '*RST': 'resetting device',  # No switcher mode active? Setting wavelength measurement to vacuum wavelength? ...
-        '*CLS': 'clear status',  # ?
-        '*READ': wavemeter.get_wavelength(0),
-        'test': 'test'
+        '*OPC': 'Operation Complete Command',
+        '*RST': 'Reset Command',  # No switcher mode active? Setting wavelength measurement to vacuum wavelength? ...
+        '*SRE': 'Service Request Enable Command',
+        '*STB': 'Read Status Byte Query',
+        '*TST': 'Self-Test Query',
+        '*WAI': 'Wait-to-Continue Command',
+        # Device specific commands.
+        'MEASure:SCALar:WAVElength:CHannel 1': wavemeter.get_wavelength(0),
+        'MEASure:WAVElength:CHannel 1': wavemeter.get_wavelength(0),
+        'MEASure:CHannel 1': wavemeter.get_wavelength(0),
+        'MEASure:SCALar:WAVElength:CHannel 2': wavemeter.get_wavelength(1),
+        'MEASure:WAVElength:CHannel 2': wavemeter.get_wavelength(1),
+        'MEASure:CHannel 2': wavemeter.get_wavelength(1),
+        'MEASure:SCALar:WAVElength:CHannel 3': wavemeter.get_wavelength(2),
+        'MEASure:WAVElength:CHannel 3': wavemeter.get_wavelength(2),
+        'MEASure:CHannel 3': wavemeter.get_wavelength(2),
+        'MEASure:SCALar:WAVElength:CHannel 4': wavemeter.get_wavelength(3),
+        'MEASure:WAVElength:CHannel 4': wavemeter.get_wavelength(3),
+        'MEASure:CHannel 4': wavemeter.get_wavelength(3),
+        'MEASure:SCALar:WAVElength:CHannel 5': wavemeter.get_wavelength(4),
+        'MEASure:WAVElength:CHannel 5': wavemeter.get_wavelength(4),
+        'MEASure:CHannel 5': wavemeter.get_wavelength(4),
+        'MEASure:SCALar:WAVElength:CHannel 6': wavemeter.get_wavelength(5),
+        'MEASure:WAVElength:CHannel 6': wavemeter.get_wavelength(5),
+        'MEASure:CHannel 6': wavemeter.get_wavelength(5),
+        'MEASure:SCALar:WAVElength:CHannel 7': wavemeter.get_wavelength(6),
+        'MEASure:WAVElength:CHannel 7': wavemeter.get_wavelength(6),
+        'MEASure:CHannel 7': wavemeter.get_wavelength(6),
+        'MEASure:SCALar:WAVElength:CHannel 8': wavemeter.get_wavelength(7),
+        'MEASure:WAVElength:CHannel 8': wavemeter.get_wavelength(7),
+        'MEASure:CHannel 8': wavemeter.get_wavelength(7),
+
+        'MEASure:SCALar:FREQuency:CHannel 1': wavemeter.get_frequency(0),
+        'MEASure:FREQuency:CHannel 1': wavemeter.get_frequency(0),
+        'MEASure:SCALar:FREQuency:CHannel 2': wavemeter.get_frequency(1),
+        'MEASure:FREQuency:CHannel 2': wavemeter.get_frequency(1),
+        'MEASure:SCALar:FREQuency:CHannel 3': wavemeter.get_frequency(2),
+        'MEASure:FREQuency:CHannel 3': wavemeter.get_frequency(2),
+        'MEASure:SCALar:FREQuency:CHannel 4': wavemeter.get_frequency(3),
+        'MEASure:FREQuency:CHannel 4': wavemeter.get_frequency(3),
+        'MEASure:SCALar:FREQuency:CHannel 5': wavemeter.get_frequency(4),
+        'MEASure:FREQuency:CHannel 5': wavemeter.get_frequency(4),
+        'MEASure:SCALar:FREQuency:CHannel 6': wavemeter.get_frequency(5),
+        'MEASure:FREQuency:CHannel 6': wavemeter.get_frequency(5),
+        'MEASure:SCALar:FREQuency:CHannel 7': wavemeter.get_frequency(6),
+        'MEASure:FREQuency:CHannel 7': wavemeter.get_frequency(6),
+        'MEASure:SCALar:FREQuency:CHannel 8': wavemeter.get_frequency(7),
+        'MEASure:FREQuency:CHannel 8': wavemeter.get_frequency(7),
          }
     )
-    print(wavemeter.commands['test'])
 
 
 def decode_scpi(wavemeter: Wavemeter, message: str) -> Callable:
+    # TODO: Must turn into a generator else "RuntimeError: cannot reuse already awaited coroutine"
+    # Its disallowed to instantiate and await the same coroutine twice in a row.
+    # Maybe replacing with futures.
+    # See also https://bugs.python.org/issue25887
     """
     Decoder of scpi orders.
 
@@ -73,12 +125,9 @@ def decode_scpi(wavemeter: Wavemeter, message: str) -> Callable:
     message : str
         Message to decode.
     """
-    try:
-        command = wavemeter.commands[message]
-        return command
-    except NameError:
-        logging.getLogger(__name__).info('Received unknown command.')
-        raise
+    command = wavemeter.commands[message]
+
+    return command
 
 
 async def read_stream(
@@ -96,19 +145,23 @@ async def read_stream(
     requests: janus.AsyncQueue
         Queue receiving requests from stream.
     """
-    # while "Connection open":
-    # Read next line in stream.
-    request: bytes = await reader.readline()
-    message: str = request.decode().rstrip()
-    print(f"Read: {message}")
-    # if not message:
-    #     break
+    while "Connection open":
+        # Read next line in stream.
+        request: bytes = await reader.readline()
+        message: str = request.decode().rstrip()
+        print(f"Read: {message}")
+        if not message:
+            break
 
-    # Decode SCPI request.
-    command: Callable = decode_scpi(wavemeter, message)
-    # Put the request into the request queue.
-    await requests.put(command)
-
+        try:
+            # Decode SCPI request.
+            command: Callable = decode_scpi(wavemeter, message)
+            # Put the request into the request queue.
+            await requests.put(command)
+        except KeyError:
+            logging.getLogger(__name__).info('Received unknown command.')
+            # await requests.put('Received unknown command.')
+            # TODO: Add error to register.
 
 
 async def listen_wm(
@@ -154,7 +207,9 @@ async def write_stream(
 
     print(f"Send: {result!r}")
     writer.write(str(result).encode())
+    print('Message send. Draining writer.')
     await writer.drain()
+    print('Writer drained.')
 
 
 async def create_wm_server(product_id: int, host: str, port: int) -> None:
@@ -201,11 +256,8 @@ async def create_wm_server(product_id: int, host: str, port: int) -> None:
         publish = asyncio.create_task(write_stream(writer, measurements.async_q))
         tasks.add(publish)
 
-        try:
-            await asyncio.gather(*tasks, return_exceptions=True)  # Gather tasks and wait for them to be done.
-            print('Tasks done.')
-        except Exception:
-            raise
+        await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
+        print('Tasks done.')
 
         # Closing the connection.
         print("Close the connection")

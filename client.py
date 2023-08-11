@@ -15,4 +15,4 @@ async def tcp_echo_client(message):
     writer.close()
     await writer.wait_closed()
 
-asyncio.run(tcp_echo_client('*IDN\n'))#Hello world!\n:CONTrol:EBENch:CLEan:INITiate\n'))
+asyncio.run(tcp_echo_client('MEAS:WAVE:CH 1\n'))#*IDN\nMEASURE:WAVELENGTH:CHANNEL 1\n'))#Hello world!\n:CONTrol:EBENch:CLEan:INITiate\n'))
