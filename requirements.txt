@@ -1,4 +1,4 @@
 janus~=1.0.0
 pre-commit~=3.3.3
 python-decouple~=3.8
-SCPIParser @ git+https://github.com/TU-Darmstadt-APQ/PythonSCPI@46056c373298ffcb9d2f2a6a6a356f2c44a2991d
+scpi-protocol~=0.2.0
