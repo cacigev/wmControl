@@ -70,7 +70,6 @@ class Wavemeter:
 
     _active_id: int | None = None
     _lock: asyncio.Lock | None = None
-    commands: dict[str: Callable] | None = None
 
     @property
     def product_id(self) -> int:
@@ -113,14 +112,14 @@ class Wavemeter:
         self.__threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self.__event_queue = janus.Queue()
 
-        self.__logger.info("Connected to wavemeter %i", self.product_id)
+        self.__logger.info("Connected to wavemeter %i.", self.product_id)
 
     async def disconnect(self) -> None:
         """
         Calling disconnect() does nothing for now.
         """
         wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
-        self.__logger.info("Disconnected from Wavemeter %i", self.product_id)
+        self.__logger.info("Disconnected from Wavemeter %i.", self.product_id)
 
     async def __wrapper(self, func: Callable, *args: Any) -> Any:
         """

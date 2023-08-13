@@ -4,16 +4,13 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
-from typing import Any, Callable, Iterable, Sequence
+from functools import partial
+from typing import Any, Callable, Coroutine, Iterable, Sequence
 
-import janus
-
-# from bliss.comm.scpi import FuncCmd, ErrCmd, IntCmd, Commands
 from decouple import config
-from scpi import Commands
+from scpi import Commands, split_line
 
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import DataPackage
 
 dll_path = None
 if sys.platform == "win32":
@@ -44,7 +41,7 @@ def parse_log_level(log_level: int | str) -> int:
     return logging.INFO  # default log level
 
 
-def create_scpi_commands(wavemeter: Wavemeter) -> None:  # Will move to init of wavemeter.
+def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
     """
     Creates for every wavemeter a dictionary of commands.
 
@@ -53,14 +50,13 @@ def create_scpi_commands(wavemeter: Wavemeter) -> None:  # Will move to init of 
     wavemeter: Wavemeter
         Device which receive commands.
     """
-    # Config-file?
-    wavemeter.commands = Commands(
+    return Commands(
         {
             # Mandatory commands.
             "*CLS": "Clear Status Command",
             "*ESE": "Standard Event Status Enable Command",
             "*ESR": "Standard Event Status Register Query",
-            "*IDN": wavemeter.get_wavemeter_info(),
+            "*IDN": partial(wavemeter.get_wavemeter_info),  # No partial required, because there are no parameters
             "*OPC": "Operation Complete Command",
             "*RST": "Reset Command",  # No switcher mode active? Setting wavelength measurement to vacuum wavelength? ...
             "*SRE": "Service Request Enable Command",
@@ -68,69 +64,51 @@ def create_scpi_commands(wavemeter: Wavemeter) -> None:  # Will move to init of 
             "*TST": "Self-Test Query",
             "*WAI": "Wait-to-Continue Command",
             # Device specific commands.
-            "MEASure:SCALar:WAVElength:CHannel 1": wavemeter.get_wavelength(0),
-            "MEASure:WAVElength:CHannel 1": wavemeter.get_wavelength(0),
-            "MEASure:CHannel 1": wavemeter.get_wavelength(0),
-            "MEASure:SCALar:WAVElength:CHannel 2": wavemeter.get_wavelength(1),
-            "MEASure:WAVElength:CHannel 2": wavemeter.get_wavelength(1),
-            "MEASure:CHannel 2": wavemeter.get_wavelength(1),
-            "MEASure:SCALar:WAVElength:CHannel 3": wavemeter.get_wavelength(2),
-            "MEASure:WAVElength:CHannel 3": wavemeter.get_wavelength(2),
-            "MEASure:CHannel 3": wavemeter.get_wavelength(2),
-            "MEASure:SCALar:WAVElength:CHannel 4": wavemeter.get_wavelength(3),
-            "MEASure:WAVElength:CHannel 4": wavemeter.get_wavelength(3),
-            "MEASure:CHannel 4": wavemeter.get_wavelength(3),
-            "MEASure:SCALar:WAVElength:CHannel 5": wavemeter.get_wavelength(4),
-            "MEASure:WAVElength:CHannel 5": wavemeter.get_wavelength(4),
-            "MEASure:CHannel 5": wavemeter.get_wavelength(4),
-            "MEASure:SCALar:WAVElength:CHannel 6": wavemeter.get_wavelength(5),
-            "MEASure:WAVElength:CHannel 6": wavemeter.get_wavelength(5),
-            "MEASure:CHannel 6": wavemeter.get_wavelength(5),
-            "MEASure:SCALar:WAVElength:CHannel 7": wavemeter.get_wavelength(6),
-            "MEASure:WAVElength:CHannel 7": wavemeter.get_wavelength(6),
-            "MEASure:CHannel 7": wavemeter.get_wavelength(6),
-            "MEASure:SCALar:WAVElength:CHannel 8": wavemeter.get_wavelength(7),
-            "MEASure:WAVElength:CHannel 8": wavemeter.get_wavelength(7),
-            "MEASure:CHannel 8": wavemeter.get_wavelength(7),
-            "MEASure:SCALar:FREQuency:CHannel 1": wavemeter.get_frequency(0),
-            "MEASure:FREQuency:CHannel 1": wavemeter.get_frequency(0),
-            "MEASure:SCALar:FREQuency:CHannel 2": wavemeter.get_frequency(1),
-            "MEASure:FREQuency:CHannel 2": wavemeter.get_frequency(1),
-            "MEASure:SCALar:FREQuency:CHannel 3": wavemeter.get_frequency(2),
-            "MEASure:FREQuency:CHannel 3": wavemeter.get_frequency(2),
-            "MEASure:SCALar:FREQuency:CHannel 4": wavemeter.get_frequency(3),
-            "MEASure:FREQuency:CHannel 4": wavemeter.get_frequency(3),
-            "MEASure:SCALar:FREQuency:CHannel 5": wavemeter.get_frequency(4),
-            "MEASure:FREQuency:CHannel 5": wavemeter.get_frequency(4),
-            "MEASure:SCALar:FREQuency:CHannel 6": wavemeter.get_frequency(5),
-            "MEASure:FREQuency:CHannel 6": wavemeter.get_frequency(5),
-            "MEASure:SCALar:FREQuency:CHannel 7": wavemeter.get_frequency(6),
-            "MEASure:FREQuency:CHannel 7": wavemeter.get_frequency(6),
-            "MEASure:SCALar:FREQuency:CHannel 8": wavemeter.get_frequency(7),
-            "MEASure:FREQuency:CHannel 8": wavemeter.get_frequency(7),
+            # "MEASure:SCALar:WAVElength:CHannel 1": wavemeter.get_wavelength(0),
+            # "MEASure:WAVElength:CHannel 1": wavemeter.get_wavelength(0),
+            # "MEASure:CHannel 1": wavemeter.get_wavelength(0),
+            # "MEASure:SCALar:WAVElength:CHannel 2": wavemeter.get_wavelength(1),
+            # "MEASure:WAVElength:CHannel 2": wavemeter.get_wavelength(1),
+            # "MEASure:CHannel 2": wavemeter.get_wavelength(1),
+            # "MEASure:SCALar:WAVElength:CHannel 3": wavemeter.get_wavelength(2),
+            # "MEASure:WAVElength:CHannel 3": wavemeter.get_wavelength(2),
+            # "MEASure:CHannel 3": wavemeter.get_wavelength(2),
+            # "MEASure:SCALar:WAVElength:CHannel 4": wavemeter.get_wavelength(3),
+            # "MEASure:WAVElength:CHannel 4": wavemeter.get_wavelength(3),
+            # "MEASure:CHannel 4": wavemeter.get_wavelength(3),
+            # "MEASure:SCALar:WAVElength:CHannel 5": wavemeter.get_wavelength(4),
+            # "MEASure:WAVElength:CHannel 5": wavemeter.get_wavelength(4),
+            # "MEASure:CHannel 5": wavemeter.get_wavelength(4),
+            # "MEASure:SCALar:WAVElength:CHannel 6": wavemeter.get_wavelength(5),
+            # "MEASure:WAVElength:CHannel 6": wavemeter.get_wavelength(5),
+            # "MEASure:CHannel 6": wavemeter.get_wavelength(5),
+            # "MEASure:SCALar:WAVElength:CHannel 7": wavemeter.get_wavelength(6),
+            # "MEASure:WAVElength:CHannel 7": wavemeter.get_wavelength(6),
+            # "MEASure:CHannel 7": wavemeter.get_wavelength(6),
+            # "MEASure:SCALar:WAVElength:CHannel 8": wavemeter.get_wavelength(7),
+            # "MEASure:WAVElength:CHannel 8": wavemeter.get_wavelength(7),
+            # "MEASure:CHannel 8": wavemeter.get_wavelength(7),
+            # "MEASure:SCALar:FREQuency:CHannel 1": wavemeter.get_frequency(0),
+            # "MEASure:FREQuency:CHannel 1": wavemeter.get_frequency(0),
+            # "MEASure:SCALar:FREQuency:CHannel 2": wavemeter.get_frequency(1),
+            # "MEASure:FREQuency:CHannel 2": wavemeter.get_frequency(1),
+            # "MEASure:SCALar:FREQuency:CHannel 3": wavemeter.get_frequency(2),
+            # "MEASure:FREQuency:CHannel 3": wavemeter.get_frequency(2),
+            # "MEASure:SCALar:FREQuency:CHannel 4": wavemeter.get_frequency(3),
+            # "MEASure:FREQuency:CHannel 4": wavemeter.get_frequency(3),
+            # "MEASure:SCALar:FREQuency:CHannel 5": wavemeter.get_frequency(4),
+            # "MEASure:FREQuency:CHannel 5": wavemeter.get_frequency(4),
+            # "MEASure:SCALar:FREQuency:CHannel 6": wavemeter.get_frequency(5),
+            # "MEASure:FREQuency:CHannel 6": wavemeter.get_frequency(5),
+            # "MEASure:SCALar:FREQuency:CHannel 7": wavemeter.get_frequency(6),
+            # "MEASure:FREQuency:CHannel 7": wavemeter.get_frequency(6),
+            # "MEASure:SCALar:FREQuency:CHannel 8": wavemeter.get_frequency(7),
+            # "MEASure:FREQuency:CHannel 8": wavemeter.get_frequency(7),
         }
     )
 
 
-def decode_scpi(wavemeter: Wavemeter, message: str) -> Callable:
-    # TODO: Must turn into a generator else "RuntimeError: cannot reuse already awaited coroutine"
-    # Its disallowed to instantiate and await the same coroutine twice in a row.
-    # Maybe replacing with futures.
-    # See also https://bugs.python.org/issue25887
-    """
-    Decoder of scpi orders.
-
-    Parameter
-    ---------
-    message : str
-        Message to decode.
-    """
-    command = wavemeter.commands[message]
-
-    return command
-
-
-async def read_stream(wavemeter: Wavemeter, reader: asyncio.StreamReader, requests: janus.AsyncQueue[Callable]) -> None:
+async def read_stream(reader: asyncio.StreamReader, job_queue: asyncio.Queue[bytes]) -> None:
     """
     Reads input from client out of stream.
 
@@ -141,47 +119,16 @@ async def read_stream(wavemeter: Wavemeter, reader: asyncio.StreamReader, reques
     requests: janus.AsyncQueue
         Queue receiving requests from stream.
     """
-    while "Connection open":
-        # Read next line in stream.
-        request: bytes = await reader.readline()
-        message: str = request.decode().rstrip()
-        print(f"Read: {message}")
-        if not message:
-            break
-
-        try:
-            # Decode SCPI request.
-            command: Callable = decode_scpi(wavemeter, message)
-            # Put the request into the request queue.
-            await requests.put(command)
-        except KeyError:
-            logging.getLogger(__name__).info("Received unknown command.")
-            # await requests.put('Received unknown command.')
-            # TODO: Add error to register.
+    while "processing commands":
+        # Commands are separated by a newline
+        request = await reader.readline()
+        logging.getLogger(__name__).debug("Received '%s' from client.", request)
+        await job_queue.put(request)
 
 
-async def listen_wm(client_requests: janus.AsyncQueue[Callable], measurements: janus.AsyncQueue[DataPackage]) -> None:
-    """
-    Puts asked measurement results of a wavemeter into a queue.
-
-    Parameter
-    ---------
-    wavemeter: Wavemeter
-        Device the server listens.
-    client_requests: janus.AsyncQueue
-        Requests from clients.
-    measurements: janus.AsyncQueue
-        Results from wavemeter.
-    """
-    request = await client_requests.get()
-
-    print(f"Request: {request}")
-    result = await request
-    print(f"Result: {result}")
-    await measurements.put(result)
-
-
-async def write_stream(writer: asyncio.StreamWriter, measurements: janus.AsyncQueue[DataPackage]) -> None:
+async def write_stream(
+    writer: asyncio.StreamWriter, protocol: Commands, job_queue: asyncio.Queue[bytes], device_timeout: float
+) -> None:
     """
     Writes the results into the stream.
 
@@ -192,59 +139,82 @@ async def write_stream(writer: asyncio.StreamWriter, measurements: janus.AsyncQu
     measurements: janus.AsyncQueue
         Queue holding the results.
     """
-    print("Writing.")
-    result = await measurements.get()
+    while "sending replies":
+        request = await job_queue.get()
+        try:
+            request_str = request.decode().rstrip()
+        except UnicodeDecodeError:
+            continue  # TODO: reply with an error
 
-    print(f"Send: {result!r}")
-    writer.write(str(result).encode())
-    print("Message send. Draining writer.")
-    await writer.drain()
-    print("Writer drained.")
+        # Try to decode SCPI request.
+        try:
+            scpi_requests = split_line(request_str)
+        except KeyError:
+            logging.getLogger(__name__).info("Received unknown request: '%s'.", request_str)
+            continue
+            # await requests.put('Received unknown command.')
+            # TODO: reply with an error
+
+        for scpi_request in scpi_requests:
+            try:
+                parsed_command = protocol[scpi_request.name]
+            except KeyError:
+                # TODO: return an error
+                logging.getLogger(__name__).info("Unknown request received: '%s'.", scpi_requests)
+                break
+            try:
+                result = await asyncio.wait_for(parsed_command(), timeout=device_timeout)
+                if scpi_requests.query:
+                    print(f"Send: {result!r}")
+                    writer.write(str(result).encode())
+                    print("Message send. Draining writer.")
+                    await writer.drain()
+                    print("Writer drained.")
+            except TimeoutError:
+                logging.getLogger(__name__).debug("Timeout error querying the wavemeter.")
 
 
-async def create_wm_server(product_id: int, host: str, port: int) -> None:
+def create_client_handler(
+    wavemeter: Wavemeter,
+) -> Callable[[asyncio.StreamReader, asyncio.StreamWriter], Coroutine[Any, Any, None]]:
     """
-    Creates a server for every connected wavemeter.
+    A closure to inject the wavemeter into the client callback handler.
 
-    The handling for client requests is enclosed.
+    Parameters
+    ----------
+    wavemeter: Wavemeter
+        The wavemeter managed by this handler
 
-    Parameter
-    ---------
-    product_id: int
-        Version of the WM. Works like a serial number just not named like it.
-    host: str
-        IP-address of host.
-    port: int
-        Port-number to call and listen for a wavemeter. Specified through product_id.
+    Returns
+    -------
+    Coroutine
+        The client_connected_cb callback that can be passed to asyncio.start_server().
     """
 
-    async def handle_request(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    async def client_handler(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         """
-        Handles client requests. Everytime called if a client connects to the server.
+        The client handler exclusively serves a single client and passes the commands to the wavemeter while returning
+        the results to the client. The input (reader) and output (writer) is separated by a queue to minimize any
+        lag introduced by delays with the wavemeter communication.
 
         Parameter
         ---------
         reader : asyncio.StreamReader
-            Reader of the client.
+            Handles the incoming traffic.
         writer : asyncio.StreamWriter
-            Writer of the client.
+            Pushes the outbound traffic to the client.
         """
-        print("Got request.")
-        client_requests: janus.Queue[str] = janus.Queue()  # Queue which gathers client requests.
-        measurements: janus.Queue[Any] = janus.Queue()  # Queue with answers for client.
+        # Limit the size of the job queue to create backpressure on the input
+        job_queue: asyncio.Queue[bytes] = asyncio.Queue(maxsize=5)
         tasks: set[asyncio.Task] = set()  # Set with TODOs.
 
-        # Received requests.
-        # Read input from client.
-        ask = asyncio.create_task(read_stream(wavemeter, reader, client_requests.async_q))
-        tasks.add(ask)
+        # Read the inputs from the client
+        input_task = asyncio.create_task(read_stream(reader, job_queue=job_queue))
+        tasks.add(input_task)
 
-        # Listen for answers from wavemeter.
-        answer = asyncio.create_task(listen_wm(client_requests.async_q, measurements.async_q))
-        tasks.add(answer)
-
-        # Publish answers.
-        publish = asyncio.create_task(write_stream(writer, measurements.async_q))
+        # Execute commands and send back the results
+        protocol = create_scpi_protocol(wavemeter)
+        publish = asyncio.create_task(write_stream(writer, protocol, job_queue, device_timeout=2.0))
         tasks.add(publish)
 
         await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
@@ -255,13 +225,32 @@ async def create_wm_server(product_id: int, host: str, port: int) -> None:
         writer.close()
         await writer.wait_closed()
 
+    return client_handler
+
+
+async def create_wm_server(product_id: int, interface: str | Sequence[str] | None, port: int) -> None:
+    """
+    Create a wavemeter SCPI server. The server listens at the given port and passes the commands to the wavemeter with
+    the given product_id
+
+    Parameter
+    ---------
+    product_id: int
+        Version of the WM. Works like a serial number just not named like it.
+    interface: str or Sequence[str] or None
+        The interface to listen on. If a str is given, the server is bound to that interface. If a sequence is given,
+        the server is bound to the interfaces given. If set to None, the server is bound to all available interfaces.
+    port: int
+        The port number to listen at.
+    """
+    assert isinstance(port, int) and port > 0
     async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
-        create_scpi_commands(wavemeter)
-        server = await asyncio.start_server(handle_request, host, port)
-        address = ", ".join(str(sock.getsockname()) for sock in server.sockets)
-        print(f"Serving on {address}")
+        server = await asyncio.start_server(
+            client_connected_cb=create_client_handler(wavemeter), host=interface, port=port
+        )
 
         async with server:
+            logging.getLogger(__name__).info("Serving wavemeter %i on %s:%i", wavemeter.product_id, interface, port)
             await server.serve_forever()
 
 
