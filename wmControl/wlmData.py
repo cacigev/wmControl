@@ -891,3 +891,7 @@ def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType,
     compilation_number = dll.GetWLMVersion(3)
 
     return WavemeterType(wavemeter_type), serial, (software_revision, compilation_number)
+
+
+def get_temperature(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
+    return Decimal(dll.GetTemperature())

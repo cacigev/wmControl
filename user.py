@@ -64,46 +64,12 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
             "*TST": "Self-Test Query",
             "*WAI": "Wait-to-Continue Command",
             # Device specific commands.
-            # "MEASure:SCALar:WAVElength:CHannel 1": wavemeter.get_wavelength(0),
-            # "MEASure:WAVElength:CHannel 1": wavemeter.get_wavelength(0),
-            # "MEASure:CHannel 1": wavemeter.get_wavelength(0),
-            # "MEASure:SCALar:WAVElength:CHannel 2": wavemeter.get_wavelength(1),
-            # "MEASure:WAVElength:CHannel 2": wavemeter.get_wavelength(1),
-            # "MEASure:CHannel 2": wavemeter.get_wavelength(1),
-            # "MEASure:SCALar:WAVElength:CHannel 3": wavemeter.get_wavelength(2),
-            # "MEASure:WAVElength:CHannel 3": wavemeter.get_wavelength(2),
-            # "MEASure:CHannel 3": wavemeter.get_wavelength(2),
-            # "MEASure:SCALar:WAVElength:CHannel 4": wavemeter.get_wavelength(3),
-            # "MEASure:WAVElength:CHannel 4": wavemeter.get_wavelength(3),
-            # "MEASure:CHannel 4": wavemeter.get_wavelength(3),
-            # "MEASure:SCALar:WAVElength:CHannel 5": wavemeter.get_wavelength(4),
-            # "MEASure:WAVElength:CHannel 5": wavemeter.get_wavelength(4),
-            # "MEASure:CHannel 5": wavemeter.get_wavelength(4),
-            # "MEASure:SCALar:WAVElength:CHannel 6": wavemeter.get_wavelength(5),
-            # "MEASure:WAVElength:CHannel 6": wavemeter.get_wavelength(5),
-            # "MEASure:CHannel 6": wavemeter.get_wavelength(5),
-            # "MEASure:SCALar:WAVElength:CHannel 7": wavemeter.get_wavelength(6),
-            # "MEASure:WAVElength:CHannel 7": wavemeter.get_wavelength(6),
-            # "MEASure:CHannel 7": wavemeter.get_wavelength(6),
-            # "MEASure:SCALar:WAVElength:CHannel 8": wavemeter.get_wavelength(7),
-            # "MEASure:WAVElength:CHannel 8": wavemeter.get_wavelength(7),
-            # "MEASure:CHannel 8": wavemeter.get_wavelength(7),
-            # "MEASure:SCALar:FREQuency:CHannel 1": wavemeter.get_frequency(0),
-            # "MEASure:FREQuency:CHannel 1": wavemeter.get_frequency(0),
-            # "MEASure:SCALar:FREQuency:CHannel 2": wavemeter.get_frequency(1),
-            # "MEASure:FREQuency:CHannel 2": wavemeter.get_frequency(1),
-            # "MEASure:SCALar:FREQuency:CHannel 3": wavemeter.get_frequency(2),
-            # "MEASure:FREQuency:CHannel 3": wavemeter.get_frequency(2),
-            # "MEASure:SCALar:FREQuency:CHannel 4": wavemeter.get_frequency(3),
-            # "MEASure:FREQuency:CHannel 4": wavemeter.get_frequency(3),
-            # "MEASure:SCALar:FREQuency:CHannel 5": wavemeter.get_frequency(4),
-            # "MEASure:FREQuency:CHannel 5": wavemeter.get_frequency(4),
-            # "MEASure:SCALar:FREQuency:CHannel 6": wavemeter.get_frequency(5),
-            # "MEASure:FREQuency:CHannel 6": wavemeter.get_frequency(5),
-            # "MEASure:SCALar:FREQuency:CHannel 7": wavemeter.get_frequency(6),
-            # "MEASure:FREQuency:CHannel 7": wavemeter.get_frequency(6),
-            # "MEASure:SCALar:FREQuency:CHannel 8": wavemeter.get_frequency(7),
-            # "MEASure:FREQuency:CHannel 8": wavemeter.get_frequency(7),
+            "MEASure:WAVElength:CHannel": partial(wavemeter.get_wavelength),  # wavelength of specific channel
+            "MEASure:WAVElength": partial(wavemeter.get_wavelength),  # all wavelengths
+            # Note for thesis: Calling wavelength and right after frequency leads to two different measurements.
+            "MEASure:FREQuency:CHannel": partial(wavemeter.get_frequency),
+            "MEASure:FREQuency": partial(wavemeter.get_frequency),
+            "MEASure:TEMPerature": partial(wavemeter.get_temperature),
         }
     )
 
@@ -163,10 +129,12 @@ async def write_stream(
                 logging.getLogger(__name__).info("Unknown request received: '%s'.", scpi_requests)
                 break
             try:
-                result = await asyncio.wait_for(parsed_command(), timeout=device_timeout)
-                if scpi_requests.query:
+                result = await asyncio.wait_for(parsed_command(int(scpi_request.args)), timeout=device_timeout)
+                # TODO: Duck typing of args or parsing to correct type in wlmData
+                if scpi_request.query:
                     print(f"Send: {result!r}")
-                    writer.write(str(result).encode())
+                    # Results are separated by a newline.
+                    writer.write((str(result) + "\n").encode())
                     print("Message send. Draining writer.")
                     await writer.drain()
                     print("Writer drained.")
@@ -231,7 +199,7 @@ def create_client_handler(
 async def create_wm_server(product_id: int, interface: str | Sequence[str] | None, port: int) -> None:
     """
     Create a wavemeter SCPI server. The server listens at the given port and passes the commands to the wavemeter with
-    the given product_id
+    the given product_id.
 
     Parameter
     ---------

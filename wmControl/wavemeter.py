@@ -210,6 +210,12 @@ class Wavemeter:
         await self.__wrapper(wlmData.set_active_wavemeter, product_id)
         Wavemeter._active_id = product_id
 
+    async def get_temperature(self):
+        async with Wavemeter._lock:
+            if Wavemeter._active_id != self.product_id:
+                await self._set_active_wavemeter(self.product_id)
+            return await self.__wrapper(wlmData.get_temperature)
+
     async def demo(self) -> None:
         """
         Simulate some inputs
