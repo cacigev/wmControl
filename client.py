@@ -1,5 +1,6 @@
-import asyncio
+from __future__ import annotations
 
+import asyncio
 
 # async def tcp_echo_client(message):
 #     reader, writer = await asyncio.open_connection(
@@ -26,10 +27,8 @@ import asyncio
 
 
 class Client:
-
     async def connect(self, interface: str, port: int) -> None:
         self.reader, self.writer = await asyncio.open_connection(interface, port)
-
 
     async def request(self, request: str) -> None:
         """Called by user on client object."""
@@ -37,21 +36,19 @@ class Client:
         await self.receive_answer()
         pass
 
-
     async def send_request(self, request: str) -> None:
         """Send request into stream."""
-        print(f'Send: {request!r}')
+        print(f"Send: {request!r}")
         self.writer.write(request.encode())
         await self.writer.drain()
         print("Writer drained.")
 
     async def receive_answer(self):
         """Retrieve from stream."""
-        print('here')
+        print("here")
         data = await self.reader.readline()
         data = data.decode().rstrip()
-        print(f'Received: {data!r}')
-
+        print(f"Received: {data!r}")
 
     def __init__(self, interface: str, port: int):
         self.reader: asyncio.StreamReader | None = None
@@ -59,14 +56,12 @@ class Client:
         self.interface: str | None = interface
         self.port: int = port
 
-
     async def __aenter__(self):
         await self.connect(self.interface, self.port)
         return self
 
-
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        print('Close the connection')
+        print("Close the connection")
         self.writer.close()
         await self.writer.wait_closed()
         pass
