@@ -129,17 +129,18 @@ async def write_stream(
                 logging.getLogger(__name__).info("Unknown request received: '%s'.", scpi_requests)
                 break
             try:
-                result = await asyncio.wait_for(parsed_command(int(scpi_request.args)), timeout=device_timeout)
-                # TODO: Duck typing of args or parsing to correct type in wlmData
-                if scpi_request.query:
-                    print(f"Send: {result!r}")
-                    # Results are separated by a newline.
-                    writer.write((str(result) + "\n").encode())
-                    print("Message send. Draining writer.")
-                    await writer.drain()
-                    print("Writer drained.")
-                else:
-                    print(f"'{scpi_request.name}' is not a query.")
+                for parameter in scpi_request.args.split(","):
+                    result = await asyncio.wait_for(parsed_command(int(parameter)), timeout=device_timeout)
+                    # TODO: Duck typing of args or parsing to correct type in wlmData
+                    if scpi_request.query:
+                        print(f"Send: {result!r}")
+                        # Results are separated by a newline.
+                        writer.write((str(result) + "\n").encode())
+                        print("Message send. Draining writer.")
+                        await writer.drain()
+                        print("Writer drained.")
+                    else:
+                        print(f"'{scpi_request.name}' is not a query.")
             except TimeoutError:
                 logging.getLogger(__name__).debug("Timeout error querying the wavemeter.")
 
