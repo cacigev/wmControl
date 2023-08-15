@@ -138,6 +138,8 @@ async def write_stream(
                     print("Message send. Draining writer.")
                     await writer.drain()
                     print("Writer drained.")
+                else:
+                    print(f"'{scpi_request.name}' is not a query.")
             except TimeoutError:
                 logging.getLogger(__name__).debug("Timeout error querying the wavemeter.")
 
