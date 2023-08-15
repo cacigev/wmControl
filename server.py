@@ -177,24 +177,44 @@ def create_client_handler(
         """
         # Limit the size of the job queue to create backpressure on the input
         job_queue: asyncio.Queue[bytes] = asyncio.Queue(maxsize=5)
-        tasks: set[asyncio.Task] = set()  # Set with TODOs.
+        pending_tasks: set[asyncio.Task] = set()  # Set with TODOs.
 
         # Read the inputs from the client
         input_task = asyncio.create_task(read_stream(reader, job_queue=job_queue))
-        tasks.add(input_task)
+        pending_tasks.add(input_task)
 
         # Execute commands and send back the results
         protocol = create_scpi_protocol(wavemeter)
         publish = asyncio.create_task(write_stream(writer, protocol, job_queue, device_timeout=2.0))
-        tasks.add(publish)
+        pending_tasks.add(publish)
 
-        await asyncio.gather(*tasks)  # Gather tasks and wait for them to be done.
-        print("Tasks done.")
+        try:
+            while pending_tasks:
+                done: set[asyncio.Task]
+                done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+                for completed_task in done:
+                    try:
+                        exc = completed_task.exception()
+                    except asyncio.exceptions.CancelledError:
+                        # If the task was canceled, there is no further action needed.
+                        continue
+                    if exc is not None:
+                        # An exception was raised. Terminate now.
+                        logging.getLogger(__name__).error("Error while serving client.", exc_info=exc)
+                        for pending_task in pending_tasks:
+                            pending_task.cancel()
+                        try:
+                            await asyncio.gather(*pending_tasks)
+                        except asyncio.CancelledError:
+                            pass
+        finally:
+            logging.getLogger(__name__).info("Shutting down client handler.")
 
-        # Closing the connection.
-        print("Close the connection")
         writer.close()
-        await writer.wait_closed()
+        try:
+            await asyncio.wait_for(writer.wait_closed(), timeout=1.0)
+        except TimeoutError:
+            pass
 
     return client_handler
 
