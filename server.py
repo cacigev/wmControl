@@ -88,6 +88,8 @@ async def read_stream(reader: asyncio.StreamReader, job_queue: asyncio.Queue[byt
     while "processing commands":
         # Commands are separated by a newline
         request = await reader.readline()
+        if not request:
+            break
         logging.getLogger(__name__).debug("Received '%s' from client.", request)
         await job_queue.put(request)
 
@@ -201,12 +203,12 @@ def create_client_handler(
                     if exc is not None:
                         # An exception was raised. Terminate now.
                         logging.getLogger(__name__).error("Error while serving client.", exc_info=exc)
-                        for pending_task in pending_tasks:
-                            pending_task.cancel()
-                        try:
-                            await asyncio.gather(*pending_tasks)
-                        except asyncio.CancelledError:
-                            pass
+                    for pending_task in pending_tasks:
+                        pending_task.cancel()
+                    try:
+                        await asyncio.gather(*pending_tasks)
+                    except asyncio.CancelledError:
+                        pass
         finally:
             logging.getLogger(__name__).info("Shutting down client handler.")
 
