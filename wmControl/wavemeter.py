@@ -221,16 +221,3 @@ class Wavemeter:
     @_lock_wavemeter
     async def get_temperature(self):
         return await self.__wrapper(wlmData.get_temperature)
-
-    async def demo(self) -> None:
-        """
-        Simulate some inputs
-        """
-        jobs = [
-            self.get_wavemeter_info(),
-            self.get_wavelength(0),
-            # self.get_wavelength(1),
-            # self.get_wavelength(2),
-            # self.get_wavelength(3),
-        ]
-        self.__logger.info(await asyncio.gather(*jobs))
