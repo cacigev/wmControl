@@ -17,7 +17,7 @@ import wmControl.wlmData as wlmData
 from async_event_bus import event_bus
 from wmControl import wlmConst
 from wmControl.data_factory import data_factory
-from wmControl.wlmConst import DataPackage, MeasureMode
+from wmControl.wlmConst import DataPackage
 
 
 def callback(product_id: int, mode: int, int_val: int, double_val: float, result: int) -> None:
@@ -80,7 +80,6 @@ class Wavemeter:
         self.__product_id = product_id
         self.__logger = logging.getLogger(__name__)
 
-        self.__pending_jobs: dict[MeasureMode : set[asyncio.Future]] = {}
         self.__threadpool: concurrent.futures.ThreadPoolExecutor | None = None
         self.__event_queue: janus.Queue[DataPackage] | None = None
         self.__callback: ctypes.POINTER | None = None
@@ -210,7 +209,7 @@ class Wavemeter:
 
     async def set_active_wavemeter(self, product_id: int):
         async with Wavemeter._lock:
-            await Wavemeter._set_active_wavemeter(product_id)
+            await self._set_active_wavemeter(product_id)
 
     async def _set_active_wavemeter(self, product_id: int):
         await self.__wrapper(wlmData.set_active_wavemeter, product_id)
