@@ -184,6 +184,12 @@ class Wavemeter:
                 await self._set_active_wavemeter(self.product_id)
             return await self.__wrapper(wlmData.get_channel)
 
+    async def get_channel_count(self) -> int:
+        async with Wavemeter._lock:
+            if Wavemeter._active_id != self.product_id:
+                await self._set_active_wavemeter(self.product_id)
+            return await self.__wrapper(wlmData.get_channel_count)
+
     async def set_channel(self, channel: int) -> None:
         async with Wavemeter._lock:
             if Wavemeter._active_id != self.product_id:

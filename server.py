@@ -11,6 +11,7 @@ from decouple import config
 from scpi import Commands, split_line
 
 from wmControl.wavemeter import Wavemeter
+from wmControl.wlmConst import NoValueError
 
 dll_path = None
 if sys.platform == "win32":
@@ -70,6 +71,8 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
             "MEASure:FREQuency:CHannel": partial(wavemeter.get_frequency),
             "MEASure:FREQuency": partial(wavemeter.get_frequency),
             "MEASure:TEMPerature": partial(wavemeter.get_temperature),
+            "GET:CHannel": partial(wavemeter.get_channel),
+            "GET:CHannel:COUNT": partial(wavemeter.get_channel_count),
         }
     )
 
@@ -132,17 +135,27 @@ async def write_stream(
                 break
             try:
                 for parameter in scpi_request.args.split(","):
-                    result = await asyncio.wait_for(parsed_command(int(parameter)), timeout=device_timeout)
-                    # TODO: Duck typing of args or parsing to correct type in wlmData
-                    if scpi_request.query:
-                        print(f"Send: {result!r}")
-                        # Results are separated by a newline.
-                        writer.write((str(result) + "\n").encode())
-                        print("Message send. Draining writer.")
-                        await writer.drain()
-                        print("Writer drained.")
-                    else:
-                        print(f"'{scpi_request.name}' is not a query.")
+                    print(parameter)
+                    try:
+                        if not parameter:
+                            result = await asyncio.wait_for(parsed_command(), timeout=device_timeout)
+                        else:
+                            result = await asyncio.wait_for(parsed_command(parameter), timeout=device_timeout)
+                            # TODO: Duck typing of args or parsing to correct type in wlmData
+                        if scpi_request.query:
+                            print(f"Send: {result!r}")
+                            # Results are separated by a newline.
+                            writer.write((str(result) + "\n").encode())
+                            print("Message send. Draining writer.")
+                            await writer.drain()
+                            print("Writer drained.")
+                        else:
+                            print(f"'{scpi_request.name}' is not a query.")
+                    except NoValueError:
+                        logging.getLogger(__name__).debug("Channel is not activated.")
+            except TypeError:
+                logging.getLogger(__name__).debug("Type error of called function.")
+                logging.getLogger(__name__).debug(">Maybe an unused parameter was not given, look into manual.")
             except TimeoutError:
                 logging.getLogger(__name__).debug("Timeout error querying the wavemeter.")
 

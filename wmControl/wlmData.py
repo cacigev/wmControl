@@ -835,7 +835,8 @@ def LoadDLL(path):
     return dll
 
 
-def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
+def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: str) -> Decimal:
+    channel = int(channel)
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.GetWavelengthNum(channel + 1, 0.0)
     if result <= 0:
@@ -844,7 +845,8 @@ def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     return Decimal(result)
 
 
-def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
+def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: str) -> Decimal:
+    channel = int(channel)
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.GetFrequencyNum(channel + 1, 0.0)
     if result <= 0:
@@ -874,6 +876,10 @@ def get_channel(dll: ctypes.WinDLL | ctypes.CDLL) -> int:
     return dll.GetSwitcherChannel(0) - 1
 
 
+def get_channel_count(dll: ctypes.WinDLL | ctypes.CDLL) -> int:
+    return dll.GetChannelsCount(0)
+
+
 def get_wavemeter_count(dll: ctypes.WinDLL | ctypes.CDLL):
     return dll.GetWLMCount(0)
 
@@ -894,4 +900,4 @@ def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType,
 
 
 def get_temperature(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
-    return Decimal(dll.GetTemperature())
+    return Decimal(dll.GetTemperature(0.0))
