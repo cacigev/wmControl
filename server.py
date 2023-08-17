@@ -137,11 +137,11 @@ async def write_stream(
                 for parameter in scpi_request.args.split(","):
                     print(parameter)
                     try:
-                        if not parameter:
-                            result = await asyncio.wait_for(parsed_command(), timeout=device_timeout)
-                        else:
+                        if parameter:
                             result = await asyncio.wait_for(parsed_command(parameter), timeout=device_timeout)
                             # TODO: Duck typing of args or parsing to correct type in wlmData
+                        else:
+                            result = await asyncio.wait_for(parsed_command(), timeout=device_timeout)
                         if scpi_request.query:
                             print(f"Send: {result!r}")
                             # Results are separated by a newline.
