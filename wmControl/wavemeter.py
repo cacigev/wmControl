@@ -9,7 +9,7 @@ import ctypes
 import logging
 from decimal import Decimal
 from types import TracebackType
-from typing import Any, AsyncGenerator, Callable, Self, Set, Type
+from typing import Any, AsyncGenerator, Awaitable, Callable, Self, Set, Type
 
 import janus
 
@@ -56,15 +56,18 @@ wavemeter_callback_pointer = ctypes.CFUNCTYPE(
 )(callback)
 
 
-def _lock_wavemeter(function):
+def _lock_wavemeter(function: Callable[..., Awaitable[Any]]):
     """
     A decorator to ensure the current wavemeter is correctly selected by the DLL.
+
     Parameters
     ----------
-    function
-
+    function:
+        The coroutine to be wrapped.
     Returns
     -------
+    Callable
+        The wrapped coroutine
 
     """
 
