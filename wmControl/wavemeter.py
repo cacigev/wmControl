@@ -56,6 +56,27 @@ wavemeter_callback_pointer = ctypes.CFUNCTYPE(
 )(callback)
 
 
+def _lock_wavemeter(function):
+    """
+    A decorator to ensure the current wavemeter is correctly selected by the DLL.
+    Parameters
+    ----------
+    function
+
+    Returns
+    -------
+
+    """
+
+    async def decorated_function(self, *args, **kwargs):
+        async with Wavemeter._lock:
+            if Wavemeter._active_id != self.product_id:
+                await self._set_active_wavemeter(self.product_id)
+            return await function(self, *args, **kwargs)
+
+    return decorated_function
+
+
 class Wavemeter:
     """
     Control all wavemeters connected to a control-PC.
@@ -153,59 +174,41 @@ class Wavemeter:
         async for event in event_bus.subscribe(str(self.product_id)):
             yield event
 
+    @_lock_wavemeter
     async def set_switch_mode(self, enable: bool) -> None:
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            await self.__wrapper(wlmData.set_switch_mode, enable)
+        await self.__wrapper(wlmData.set_switch_mode, enable)
 
+    @_lock_wavemeter
     async def get_switch_mode(self) -> bool:
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_switch_mode)
+        return await self.__wrapper(wlmData.get_switch_mode)
 
+    @_lock_wavemeter
     async def get_wavelength(self, channel: int) -> Decimal:
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_wavelength, channel)
+        return await self.__wrapper(wlmData.get_wavelength, channel)
 
+    @_lock_wavemeter
     async def get_frequency(self, channel: int) -> Decimal:
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_frequency, channel)
+        return await self.__wrapper(wlmData.get_frequency, channel)
 
+    @_lock_wavemeter
     async def get_channel(self) -> int:
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_channel)
+        return await self.__wrapper(wlmData.get_channel)
 
+    @_lock_wavemeter
     async def get_channel_count(self) -> int:
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_channel_count)
+        return await self.__wrapper(wlmData.get_channel_count)
 
+    @_lock_wavemeter
     async def set_channel(self, channel: int) -> None:
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.set_channel, channel)
+        return await self.__wrapper(wlmData.set_channel, channel)
 
+    @_lock_wavemeter
     async def get_wavemeter_info(self):
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_wavemeter_info)
+        return await self.__wrapper(wlmData.get_wavemeter_info)
 
+    @_lock_wavemeter
     async def get_wavemeter_count(self):
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_wavemeter_count)
+        return await self.__wrapper(wlmData.get_wavemeter_count)
 
     async def set_active_wavemeter(self, product_id: int):
         async with Wavemeter._lock:
@@ -215,11 +218,9 @@ class Wavemeter:
         await self.__wrapper(wlmData.set_active_wavemeter, product_id)
         Wavemeter._active_id = product_id
 
+    @_lock_wavemeter
     async def get_temperature(self):
-        async with Wavemeter._lock:
-            if Wavemeter._active_id != self.product_id:
-                await self._set_active_wavemeter(self.product_id)
-            return await self.__wrapper(wlmData.get_temperature)
+        return await self.__wrapper(wlmData.get_temperature)
 
     async def demo(self) -> None:
         """
