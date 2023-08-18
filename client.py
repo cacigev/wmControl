@@ -7,15 +7,23 @@ from typing import Any
 import os
 
 import numpy as np
-from scpi import decode_IDN
+from scpi import Commands, decode_IDN, split_line
 
 
 class MakeFile:
 
-    standard_column_names = {
-        "time": "t/s",
-        "MEASure:WAVElength:CHannel": "CH:1/nm"
-    }
+    def create_scpi_protocol(self) -> Commands:
+        """"""
+        return Commands(
+            {
+                "MEASure:WAVElength:CHannel": "CH:x/nm",
+                "MEASure:WAVElength": "CH:x/nm",
+                "MEASure:FREQuency:CHannel": "CH:x/THz",
+                "MEASure:FREQuency": "CH:x/THz",
+                "MEASure:TEMPerature": "T/°C",
+            }
+        )
+
 
     def __init__(
             self,
@@ -66,9 +74,21 @@ class MakeFile:
         self.set_header()
 
 
-    def set_column_names(self, column_names: str) -> None:
-        if column_names:
-            self.column_names = column_names
+    def set_column_names(self, request: str) -> None:
+        column_names: str = "t/s"
+        protocol = self.create_scpi_protocol()
+        commands: [str] = request.split("\n")
+        for command in commands:
+            scpi_requests = split_line(command)
+
+            for scpi_request in scpi_requests:
+                column_name = protocol[scpi_request.name]
+                column_names += f"   {column_name}"
+
+        # TODO: add arguments
+
+        self.column_names = column_names
+        self.set_header()
 
 
     def set_time_started(self, time_started: datetime | str | int | None=None) -> None:
@@ -215,9 +235,8 @@ class Client:
             Requests as scpi commands.
         """
         data = np.zeros(request.count("\n") + request.count(",") + 1)
-        measurement_start: datetime = file.time_started
-        now: datetime = datetime.now()
-        event_time: timedelta = now - measurement_start
+        file.set_column_names(request)
+        event_time: timedelta = datetime.now() - file.time_started
         data[0] = event_time.microseconds
         data[1:] = await self.request(request)
 

@@ -30,7 +30,7 @@ async def main():  # TODO: Dropping async-with-as and replacing through somethin
         wm_info_1 = await wm_client.request("*IDN?\n")
         wm_info_2 = await wm_client_2.request("*IDN?\n")
         wm_clients_info = [wm_info_1, wm_info_2]
-        request = "MEAS:TEMP?\nMEAS:WAVE:CH? 0,1,2,3,4,5,6,7\n"
+        request = "MEAS:TEMP?\nMEAS:FREQ:CH? 0,1,2,3,4,5,6,7\n"
         data = np.zeros(6)
         name = input("Filename: ")
         name = name + ".txt"
