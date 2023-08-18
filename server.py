@@ -11,7 +11,7 @@ from decouple import config
 from scpi import Commands, split_line
 
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import NoValueError
+from wmControl.wlmConst import NoValueError, LowSignalError
 
 dll_path = None
 if sys.platform == "win32":
@@ -153,6 +153,21 @@ async def write_stream(
                             print(f"'{scpi_request.name}' is not a query.")
                     except NoValueError:
                         logging.getLogger(__name__).debug("Channel is not activated.")
+                        logging.getLogger(__name__).info("Low signal.")
+                        print(f"Send: -1")
+                        # Results are separated by a newline.
+                        writer.write(("-1" + "\n").encode())
+                        print("Message send. Draining writer.")
+                        await writer.drain()
+                        print("Writer drained.")
+                    except LowSignalError:
+                        logging.getLogger(__name__).info("Low signal.")
+                        print(f"Send: -1")
+                        # Results are separated by a newline.
+                        writer.write(("-1" + "\n").encode())
+                        print("Message send. Draining writer.")
+                        await writer.drain()
+                        print("Writer drained.")
             except TypeError:
                 logging.getLogger(__name__).debug("Type error of called function.")
                 logging.getLogger(__name__).debug(">Maybe an unused parameter was not given, look into manual.")

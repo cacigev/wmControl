@@ -29,27 +29,26 @@ async def main():  # TODO: Dropping async-with-as and replacing through somethin
         print(wm_client)
         wm_info_1 = await wm_client.request("*IDN?\n")
         wm_info_2 = await wm_client_2.request("*IDN?\n")
-        wm_info = [wm_info_1, wm_info_2]
+        wm_clients_info = [wm_info_1, wm_info_2]
+        request = "MEAS:TEMP?\nMEAS:WAVE:CH? 0,1,2,3,4,5,6,7\n"
         data = np.zeros(6)
         name = input("Filename: ")
         name = name + ".txt"
-        file = MakeFile(name)
-        for i in range(5):
-            # await wm_client.send_request("GET:CH?\nGET:CH:COUNT?\n")
-
-            # results = await wm_client.request("MEAS:TEMP?\nMEAS:FREQ:CH? 0,1,3,4\n")  # Manages both request and answer.
-            # data[0] = (time.time())
-            # data[1:] = results
-
-            # Write data to file, wait and repeat.
-            # write(name, [data])
-            # file.write_txt_file([data])
-            await asyncio.sleep(1)
-            await wm_client.requests_to_file(file, "MEAS:TEMP?\nMEAS:FREQ:CH? 0,1,3,4\n")
-            await asyncio.sleep(1)
+        # file = MakeFile(name, wm_clients_info)
+        # while "program is running":
+        #     await wm_client.send_request("GET:CH?\nGET:CH:COUNT?\n")
+        #
+        #     results = await wm_client.request("MEAS:TEMP?\nMEAS:FREQ:CH? 0,1,3,6\n")  # Manages both request and answer.
+        #     data[0] = (time.time())
+        #
+        #     data[1:] = results
+        #
+        #     Write data to file, wait and repeat.
+        #     write(name, [data])
+        #     file.write_txt_file([data])
+        #     await wm_client.requests_to_file(file, "MEAS:TEMP?\nMEAS:FREQ:CH? 0,1,3,4\n")
+        #     await asyncio.sleep(1)
+        await wm_client.measure_cycle(name, wm_clients_info, request, measure_time=0, repetition=3, sleep_time=0)
 
 
 asyncio.run(main())
-
-# wm = Client('127.0.0.1', 5555)
-# measurement = wm.request('MEAS:WAVE:CH 1\nMEAS:FREQ:CH? 1\n')
