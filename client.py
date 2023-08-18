@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime
 import time
 from typing import Any
 import os
@@ -31,6 +32,78 @@ import numpy as np
 # asyncio.run(tcp_echo_client('MEAS:FREQ:CH? 1\n'))#MEASure:CHannel? 1\nMEASure:CHannel? 1\n\n'))
 
 
+class MakeFile:
+
+    standard_column_names = {
+        "time": "t/s",
+        "MEASure:WAVElength:CHannel": "CH:1/nm"
+    }
+
+    def __init__(self, filename: str, column_names: [str] | None=None):
+        self.filename: str = filename
+        self.time_connected: datetime = datetime.now()
+        self.time_started: datetime | str = "not started"
+        self.time_interval: datetime | int | str = "inf"  # can be repeating times, timeinterval or specified time (like a one time measurement at the morning)
+        self.wavemeter_info: str = "no wavemeter info"
+
+        if not self.filename[-4:] == ".txt":
+            self.filename = self.filename + ".txt"
+        if column_names:
+            self.set_column_names(*column_names)
+        else:
+            self.column_names: str = "t/s   T/°C    CH:1/nm"
+        self.set_time_started()
+
+        self.time_info: str = (
+                "Connected: " +
+                str(self.time_connected) +
+                "   Started: " +
+                str(self.time_started) +
+                "   Interval: " +
+                str(self.time_interval) +
+                "   Stopped: "
+        )
+        self.header: str = (
+                self.time_info +
+                "\n" +
+                self.wavemeter_info +
+                "\n\n" +
+                self.column_names
+        )
+
+    def set_wavemeter_info(self, *wavemeter_info: str) -> None:
+        for wm in wavemeter_info:
+            self.wavemeter_info += str(wm)
+
+
+    def set_column_names(self, column_names: str) -> None:
+        if column_names:
+            self.column_names = column_names
+
+    def set_time_started(self, time_started: datetime | str | int | None=None) -> None:
+        if time_started:
+            self.time_started = str(time_started)
+        else:
+            self.time_started = datetime.now()
+
+
+    def write_txt_file(self, data: [float], fmt: [str] | None=None, stopped_time: int| None=None) -> None:
+        header: str = ""
+        if not os.path.isfile(self.filename):
+            header = self.header
+        if fmt is None:
+            fmt = ("%i", "%.3f", "%.8f", "%.8f", "%.8f", "%.8f")
+        if stopped_time:
+            self.time_info + str(stopped_time)
+        try:
+            with open(self.filename, "a") as file:
+                np.savetxt(file, data, header=header, fmt=fmt)
+        except AttributeError:
+            print("Format has wrong shape. Numpy default format will be used")
+            with open(self.filename, "a") as file:
+                np.savetxt(file, data, header=header)
+
+
 class Client:
     async def connect(self, interface: str, port: int) -> None:
         self.reader, self.writer = await asyncio.open_connection(interface, port)
@@ -45,18 +118,7 @@ class Client:
         self.header = header
 
 
-    def create_txt_file(self, data: [float]) -> None:
-        header: str = ""
-        if not os.path.isfile(self.filename):
-            header = "date measurement\n" \
-                     "started=time interval=seconds\n" \
-                     "\n" \
-                     "T/s TEMP/°C WAVE:CH:4/nm(vac) WaveCH:5/nm(vac) WaveCH:7/nm(vac)"
-        with open(self.filename, "a") as file:
-            np.savetxt(file, data, header=header, fmt=("%s", "%.3f", "%.8f", "%.8f", "%.8f", "%.8f"))
-
-
-    async def requests_to_file(self, request: str, filename: str | None =None) -> None:
+    async def requests_to_file(self, file: MakeFile, request: str) -> None:
         """
         Measures the given requests and writes them down in a text file.
 
@@ -68,17 +130,12 @@ class Client:
             Name of file to save the data. If none is given the default will be used.
             If the default filename is None the user will be asked to give a filename via input.
         """
-        if not (self.filename or filename):
-            self.filename = input("Filename: ")
-        if not self.filename[-4:] == ".txt":
-            self.filename = self.filename + ".txt"
-
         data = np.zeros(request.count("\n") + request.count(",") + 1)
-        event_time = time.gmtime(time.time())
-        data[0] = time.strftime("%H:%M:%S", event_time)
+        event_time = datetime.now()
+        data[0] = float(event_time.second)
         data[1:] = await self.request(request)
 
-        self.create_txt_file([data])
+        file.write_txt_file([data])
 
 
     async def request(self, request: str) -> [Any]:
@@ -108,7 +165,6 @@ class Client:
 
     async def receive_answer(self) -> Any:
         """Retrieve from stream."""
-        print("here")
         data = await self.reader.readline()
         data = data.decode().rstrip()
         # if not data:
@@ -123,7 +179,6 @@ class Client:
         self.writer: asyncio.StreamWriter | None = None
         self.interface: str | None = interface
         self.port: int = port
-        self.filename: str | None = None
         self.header = None
 
     async def __aenter__(self):
