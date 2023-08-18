@@ -44,6 +44,7 @@ async def main():  # TODO: Dropping async-with-as and replacing through somethin
             # Write data to file, wait and repeat.
             # write(name, [data])
             # file.write_txt_file([data])
+            await asyncio.sleep(1)
             await wm_client.requests_to_file(file, "MEAS:TEMP?\nMEAS:FREQ:CH? 0,1,3,4\n")
             await asyncio.sleep(1)
 

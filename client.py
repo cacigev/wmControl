@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 from typing import Any
 import os
@@ -41,10 +41,16 @@ class MakeFile:
 
     def __init__(self, filename: str, column_names: [str] | None=None):
         self.filename: str = filename
+        # time infos
         self.time_connected: datetime = datetime.now()
-        self.time_started: datetime | str = "not started"
-        self.time_interval: datetime | int | str = "inf"  # can be repeating times, timeinterval or specified time (like a one time measurement at the morning)
+        self.time_started: datetime | str | int | None = None
+        self.time_interval: datetime | int | str = "inf"  # datetime=zeitspanne | int=wiederholung | str=ewig/Ereignis
+        # >> can be repeating times, timeinterval or specified time (like a one time measurement at the morning)
+        self.time_stopped: datetime | int | None = None  # datetime=zeitpunkt | int=Messdauer | None=nicht gestoppt: etweder weil ewig/ereignis oder wiederholungs messung
+        # header elements
+        self.time_info: str = ""
         self.wavemeter_info: str = "no wavemeter info"
+        self.header: str = ""
 
         if not self.filename[-4:] == ".txt":
             self.filename = self.filename + ".txt"
@@ -52,24 +58,12 @@ class MakeFile:
             self.set_column_names(*column_names)
         else:
             self.column_names: str = "t/s   T/°C    CH:1/nm"
-        self.set_time_started()
 
-        self.time_info: str = (
-                "Connected: " +
-                str(self.time_connected) +
-                "   Started: " +
-                str(self.time_started) +
-                "   Interval: " +
-                str(self.time_interval) +
-                "   Stopped: "
-        )
-        self.header: str = (
-                self.time_info +
-                "\n" +
-                self.wavemeter_info +
-                "\n\n" +
-                self.column_names
-        )
+        self.set_time_started()
+        self.set_time_info()
+        self.set_header()
+
+
 
     def set_wavemeter_info(self, *wavemeter_info: str) -> None:
         for wm in wavemeter_info:
@@ -87,6 +81,25 @@ class MakeFile:
             self.time_started = datetime.now()
 
 
+    def set_time_info(self) -> None:
+        time_info: str = "Connected: x  Started: x  Interval: x Stopped: x"
+        # Maybe if-clause to not write None in time_stopped if its None
+        time_info = time_info.replace("x", str(self.time_connected), 1)
+        time_info = time_info.replace("x", str(self.time_started), 1)
+        time_info = time_info.replace("x", str(self.time_interval), 1)
+        time_info = time_info.replace("x", str(self.time_stopped), 1)
+
+        self.time_info = time_info
+
+
+    def set_header(self) -> None:
+        header: str = "x\nx\n\nx"
+        header = header.replace("x", str(self.time_info), 1)
+        header = header.replace("x", str(self.wavemeter_info), 1)
+        header = header.replace("x", str(self.column_names), 1)
+
+        self.header = header
+
     def write_txt_file(self, data: [float], fmt: [str] | None=None, stopped_time: int| None=None) -> None:
         header: str = ""
         if not os.path.isfile(self.filename):
@@ -95,6 +108,7 @@ class MakeFile:
             fmt = ("%i", "%.3f", "%.8f", "%.8f", "%.8f", "%.8f")
         if stopped_time:
             self.time_info + str(stopped_time)
+            header = self.header
         try:
             with open(self.filename, "a") as file:
                 np.savetxt(file, data, header=header, fmt=fmt)
@@ -131,8 +145,10 @@ class Client:
             If the default filename is None the user will be asked to give a filename via input.
         """
         data = np.zeros(request.count("\n") + request.count(",") + 1)
-        event_time = datetime.now()
-        data[0] = float(event_time.second)
+        measurement_start: datetime = file.time_started
+        now: datetime = datetime.now()
+        event_time: timedelta = now - measurement_start
+        data[0] = event_time.microseconds
         data[1:] = await self.request(request)
 
         file.write_txt_file([data])
