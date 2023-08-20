@@ -24,7 +24,7 @@ def _encode_idn(wavemeter: WavemeterType, serial: int, software_version: tuple[i
     return f"HighFinesse,{wavemeter.name},{serial},{software_version[0]}.{software_version[1]}".upper()
 
 
-def _encode_float(values: float | Decimal | Iterable[float] | Iterable[Decimal]) -> str:
+def _encode_number(values: int | float | Decimal | Iterable[float] | Iterable[float] | Iterable[Decimal]) -> str:
     try:
         return ",".join(map(str, values))
     except TypeError:
@@ -86,7 +86,7 @@ async def _query_channel(
 
 
 IDNCmd = partial(Cmd, encode=_encode_idn, decode=lambda x: x, doc="identification query")
-ChannelQueryCmd = partial(Cmd, decode=_parse_channel_list)
+NumberCmdR = partial(Cmd, encode=_encode_number)
 
 
 def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
@@ -112,21 +112,19 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
             "*TST": "Self-Test Query",
             "*WAI": "Wait-to-Continue Command",
             # Device specific commands.
-            "MEASure:WAVElength:CHannel": ChannelQueryCmd(
-                encode=_encode_float,
+            "MEASure:WAVElength:CHannel": NumberCmdR(
+                decode=_parse_channel_list,
                 get=partial(_query_channel, wavemeter.get_wavelength),
                 doc="wavelength measurement query",
             ),  # wavelength of specific channel
-            "MEASure:WAVElength": partial(wavemeter.get_wavelength),  # all wavelengths
             # Note for thesis: Calling wavelength and right after frequency leads to two different measurements.
-            "MEASure:FREQuency:CHannel": ChannelQueryCmd(
-                encode=_encode_float,
+            "MEASure:FREQuency:CHannel": NumberCmdR(
+                decode=_parse_channel_list,
                 get=partial(_query_channel, wavemeter.get_frequency),
                 doc="frequency measurement query",
             ),
-            "MEASure:FREQuency": partial(wavemeter.get_frequency),
-            "MEASure:TEMPerature": Cmd(get=wavemeter.get_temperature),
-            "GET:CHannel": partial(wavemeter.get_channel),
-            "GET:CHannel:COUNT": partial(wavemeter.get_channel_count),
+            "MEASure:TEMPerature": NumberCmdR(decode=lambda x: x, get=wavemeter.get_temperature),
+            "GET:CHannel": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel),
+            "GET:CHannel:COUNT": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel_count),
         }
     )
