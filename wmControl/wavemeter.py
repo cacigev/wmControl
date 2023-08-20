@@ -17,7 +17,7 @@ import wmControl.wlmData as wlmData
 from async_event_bus import event_bus
 from wmControl import wlmConst
 from wmControl.data_factory import data_factory
-from wmControl.wlmConst import DataPackage
+from wmControl.wlmConst import DataPackage, WavemeterType
 
 
 def callback(product_id: int, mode: int, int_val: int, double_val: float, result: int) -> None:
@@ -206,7 +206,7 @@ class Wavemeter:
         return await self.__wrapper(wlmData.set_channel, channel)
 
     @_lock_wavemeter
-    async def get_wavemeter_info(self):
+    async def get_wavemeter_info(self) -> tuple[WavemeterType, int, tuple[int, int]]:
         return await self.__wrapper(wlmData.get_wavemeter_info)
 
     @_lock_wavemeter
