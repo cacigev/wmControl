@@ -835,8 +835,7 @@ def LoadDLL(path):
     return dll
 
 
-def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: str) -> Decimal:
-    channel = int(channel)
+def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.GetWavelengthNum(channel + 1, 0.0)
     if result <= 0:
@@ -845,8 +844,7 @@ def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: str) -> Decimal:
     return Decimal(result)
 
 
-def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: str) -> Decimal:
-    channel = int(channel)
+def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.GetFrequencyNum(channel + 1, 0.0)
     if result <= 0:

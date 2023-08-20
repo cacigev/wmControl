@@ -4,14 +4,13 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
-from functools import partial
 from typing import Any, Callable, Coroutine, Iterable, Sequence
 
 from decouple import config
 from scpi import Commands, split_line
 
+from scpi_protocol import InvalidSyntaxException, create_scpi_protocol
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import NoValueError, LowSignalError
 
 dll_path = None
 if sys.platform == "win32":
@@ -40,41 +39,6 @@ def parse_log_level(log_level: int | str) -> int:
     if isinstance(level, int):
         return level
     return logging.INFO  # default log level
-
-
-def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
-    """
-    Creates for every wavemeter a dictionary of commands.
-
-    Parameter
-    ---------
-    wavemeter: Wavemeter
-        Device which receive commands.
-    """
-    return Commands(
-        {
-            # Mandatory commands.
-            "*CLS": "Clear Status Command",
-            "*ESE": "Standard Event Status Enable Command",
-            "*ESR": "Standard Event Status Register Query",
-            "*IDN": partial(wavemeter.get_wavemeter_info),  # No partial required, because there are no parameters
-            "*OPC": "Operation Complete Command",
-            "*RST": "Reset Command",  # No switcher mode active? Setting wavelength measurement to vacuum wavelength? ...
-            "*SRE": "Service Request Enable Command",
-            "*STB": "Read Status Byte Query",
-            "*TST": "Self-Test Query",
-            "*WAI": "Wait-to-Continue Command",
-            # Device specific commands.
-            "MEASure:WAVElength:CHannel": partial(wavemeter.get_wavelength),  # wavelength of specific channel
-            "MEASure:WAVElength": partial(wavemeter.get_wavelength),  # all wavelengths
-            # Note for thesis: Calling wavelength and right after frequency leads to two different measurements.
-            "MEASure:FREQuency:CHannel": partial(wavemeter.get_frequency),
-            "MEASure:FREQuency": partial(wavemeter.get_frequency),
-            "MEASure:TEMPerature": partial(wavemeter.get_temperature),
-            "GET:CHannel": partial(wavemeter.get_channel),
-            "GET:CHannel:COUNT": partial(wavemeter.get_channel_count),
-        }
-    )
 
 
 async def read_stream(reader: asyncio.StreamReader, job_queue: asyncio.Queue[bytes]) -> None:
@@ -130,49 +94,30 @@ async def write_stream(
             try:
                 parsed_command = protocol[scpi_request.name]
             except KeyError:
-                # TODO: return an error
+                # TODO: reply with an error
                 logging.getLogger(__name__).info("Unknown request received: '%s'.", scpi_requests)
                 break
+            logging.getLogger(__name__).debug("Received SCPI request: %s", parsed_command.get("doc", parsed_command))
             try:
-                for parameter in scpi_request.args.split(","):
-                    print(parameter)
-                    try:
-                        if parameter:
-                            result = await asyncio.wait_for(parsed_command(parameter), timeout=device_timeout)
-                            # TODO: Duck typing of args or parsing to correct type in wlmData
-                        else:
-                            result = await asyncio.wait_for(parsed_command(), timeout=device_timeout)
-                        if scpi_request.query:
-                            print(f"Send: {result!r}")
-                            # Results are separated by a newline.
-                            writer.write((str(result) + "\n").encode())
-                            print("Message send. Draining writer.")
-                            await writer.drain()
-                            print("Writer drained.")
-                        else:
-                            print(f"'{scpi_request.name}' is not a query.")
-                    except NoValueError:
-                        logging.getLogger(__name__).debug("Channel is not activated.")
-                        logging.getLogger(__name__).info("Low signal.")
-                        print(f"Send: -1")
-                        # Results are separated by a newline.
-                        writer.write(("-1" + "\n").encode())
-                        print("Message send. Draining writer.")
-                        await writer.drain()
-                        print("Writer drained.")
-                    except LowSignalError:
-                        logging.getLogger(__name__).info("Low signal.")
-                        print(f"Send: -1")
-                        # Results are separated by a newline.
-                        writer.write(("-1" + "\n").encode())
-                        print("Message send. Draining writer.")
-                        await writer.drain()
-                        print("Writer drained.")
-            except TypeError:
-                logging.getLogger(__name__).debug("Type error of called function.")
-                logging.getLogger(__name__).debug(">Maybe an unused parameter was not given, look into manual.")
+                function_call = parsed_command["get" if scpi_request.query else "set"]
+            except KeyError:
+                # TODO: reply with an error
+                continue
+            result: str
+            try:
+                if scpi_request.args:
+                    result = parsed_command["encode"](await function_call(parsed_command["decode"](scpi_request.args)))
+                else:
+                    result = parsed_command["encode"](await function_call())
+            except InvalidSyntaxException:
+                # TODO: reply with an error
+                continue
             except TimeoutError:
-                logging.getLogger(__name__).debug("Timeout error querying the wavemeter.")
+                logging.getLogger(__name__).debug("Timeout error while querying the wavemeter. Dropping request,")
+                break
+
+            writer.write((result + "\n").encode())
+            await writer.drain()
 
 
 def create_client_handler(
