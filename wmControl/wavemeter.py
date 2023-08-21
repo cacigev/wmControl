@@ -9,7 +9,12 @@ import ctypes
 import logging
 from decimal import Decimal
 from types import TracebackType
-from typing import Any, AsyncGenerator, Awaitable, Callable, Self, Set, Type
+from typing import Any, AsyncGenerator, Awaitable, Callable, Set, Type
+
+try:
+    from typing import Self  # type: ignore # Python >=3.11
+except ImportError:
+    from typing_extensions import Self
 
 import janus
 
