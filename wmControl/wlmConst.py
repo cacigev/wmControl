@@ -790,6 +790,65 @@ class Temperature(DataPackage):
         )
 
 
+@dataclass(init=False)
+class Pressure(DataPackage):
+    """
+    The ambient air pressure in Pascal.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    value : Decimal
+        Measured pressure in Pa.
+    """
+
+    mode = MeasureMode.cmiPressure
+
+    timestamp: int
+    value: Decimal
+
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val) * 100
+        super().__init__(product_id=version)
+
+    def __str__(self):
+        return f"Pressure measurement: {self.value:.0f} Pa | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+
+@dataclass(init=False)
+class TimeTick(DataPackage):
+    """
+    Time correlating to a specific measurement calculation. Represents the interval elapsed since start of the
+    measurement.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    timestamp : int
+        Timestamp of the measurement in milliseconds.
+    value : Decimal
+        The time since the start of the measurement in ?.
+    """
+
+    mode = MeasureMode.cmiNowTick_d
+
+    timestamp: int
+    value: Decimal
+
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
+
+    def __str__(self):
+        return f"Time Tick: {self.value:.4f}  | timestamp {self.timestamp} | wavemeter {self.product_id}."
+
+
 @dataclass
 class Distance(DataPackage):
     """

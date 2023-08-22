@@ -46,7 +46,9 @@ def callback(product_id: int, mode: int, int_val: int, double_val: float, result
     try:
         package: DataPackage = data_factory.get(mode, product_id, int_val, double_val, result)
     except ValueError:
-        logging.getLogger(__name__).debug("Unknown data type received: %i.", mode)
+        logging.getLogger(__name__).debug(
+            "Unknown data type received from wavemeter %i: %i | %i | %s.", product_id, mode, int_val, double_val
+        )
     else:
         event_bus.publish_sync(str(package.product_id), package)
 

@@ -105,6 +105,7 @@ from wmControl.wlmConst import (
     Operation,
     PID_dt,
     PIDCourse,
+    Pressure,
     PulseMode,
     Range,
     Reduced,
@@ -112,6 +113,7 @@ from wmControl.wlmConst import (
     SwitcherChannel,
     SwitcherMode,
     Temperature,
+    TimeTick,
     Wavelength1,
     Wavelength2,
     Wavelength3,
@@ -161,6 +163,8 @@ data_factory.register(Wavelength6)
 data_factory.register(Wavelength7)
 data_factory.register(Wavelength8)
 data_factory.register(Temperature)
+data_factory.register(Pressure)
+data_factory.register(TimeTick)
 data_factory.register(Distance)
 data_factory.register(Linewidth)
 data_factory.register(AnalogIn)
