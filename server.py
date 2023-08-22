@@ -106,9 +106,9 @@ async def write_stream(
             result: str
             try:
                 if scpi_request.args:
-                    result = parsed_command["encode"](await function_call(parsed_command["decode"](scpi_request.args)))
+                    result = await function_call(parsed_command["decode"](scpi_request.args))
                 else:
-                    result = parsed_command["encode"](await function_call())
+                    result = await function_call()
             except InvalidSyntaxException:
                 # TODO: reply with an error
                 continue
@@ -116,8 +116,9 @@ async def write_stream(
                 logging.getLogger(__name__).debug("Timeout error while querying the wavemeter. Dropping request,")
                 break
 
-            writer.write((result + "\n").encode())
-            await writer.drain()
+            if scpi_request.query:
+                writer.write((parsed_command["encode"](result) + "\n").encode())
+                await writer.drain()
 
 
 def create_client_handler(
