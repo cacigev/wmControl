@@ -239,7 +239,8 @@ logging.basicConfig(
 
 try:
     # 4711: Quips B 192.168.1.240
-    # 536: WS-6
+    # 4734: WS-8 192.168.1.45
+    # 536: WS-6 192.168.1.45
     wm_list = [(4734, ("127.0.0.1", 5555)), (536, ("127.0.0.1", 5556))]
     asyncio.run(main(wm_list))
 except KeyboardInterrupt:
