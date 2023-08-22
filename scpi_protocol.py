@@ -20,8 +20,8 @@ class InvalidSyntaxException(ScpiException):
     pass
 
 
-def _encode_idn(wavemeter: WavemeterType, value: tuple[int, tuple[int, int]]) -> str:
-    serial, software_version = value
+def _encode_idn(value: tuple[WavemeterType, int, tuple[int, int]]) -> str:
+    wavemeter, serial, software_version = value
     return f"HighFinesse,{wavemeter.name},{serial},{software_version[0]}.{software_version[1]}".upper()
 
 
