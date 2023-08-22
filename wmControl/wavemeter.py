@@ -22,7 +22,7 @@ import wmControl.wlmData as wlmData
 from async_event_bus import event_bus
 from wmControl import wlmConst
 from wmControl.data_factory import data_factory
-from wmControl.wlmConst import DataPackage, WavemeterType
+from wmControl.wlmConst import DataPackage, NoWavemeterAvailable, WavemeterType
 
 
 def callback(product_id: int, mode: int, int_val: int, double_val: float, result: int) -> None:
@@ -141,6 +141,10 @@ class Wavemeter:
 
         self.__threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self.__event_queue = janus.Queue()
+
+        _, product_id, _ = await self.get_wavemeter_info()
+        if product_id != self.product_id:
+            raise NoWavemeterAvailable("The wavemeter with id %i was not found.", self.product_id)
 
         self.__logger.info("Connected to wavemeter %i.", self.product_id)
 
