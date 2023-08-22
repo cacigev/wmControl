@@ -11,6 +11,7 @@ from scpi import Commands, split_line
 
 from scpi_protocol import InvalidSyntaxException, create_scpi_protocol
 from wmControl.wavemeter import Wavemeter
+from wmControl.wlmConst import LowSignalError
 
 dll_path = None
 if sys.platform == "win32":
@@ -104,6 +105,7 @@ async def write_stream(
                 # TODO: reply with an error
                 continue
             result: str
+
             try:
                 if scpi_request.args:
                     result = await function_call(parsed_command["decode"](scpi_request.args))
@@ -115,6 +117,11 @@ async def write_stream(
             except TimeoutError:
                 logging.getLogger(__name__).debug("Timeout error while querying the wavemeter. Dropping request,")
                 break
+            # TODO: LowSignal error exception
+            # except LowSignalError:
+            #     writer.write(("-1" + "\n").encode())
+            #     print("Send -1")
+            #     continue
 
             if scpi_request.query:
                 writer.write((parsed_command["encode"](result) + "\n").encode())
