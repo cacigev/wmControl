@@ -164,5 +164,8 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
             "MEASure:TEMPerature": NumberCmdR(decode=lambda x: x, get=wavemeter.get_temperature),
             "GET:CHannel": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel),
             "GET:CHannel:COUNT": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel_count),
+            "GET:CALibration": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration),  # Not SCPI conform
+            "GET:CAL:TEST": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration_ba_0),  # Not SCPI conform
+            "GET:CAL:DIF": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration_dif),  # Not SCPI conform
         }
     )

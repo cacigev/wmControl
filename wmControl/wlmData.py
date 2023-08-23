@@ -899,3 +899,15 @@ def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType,
 
 def get_temperature(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
     return Decimal(dll.GetTemperature(0.0))
+
+
+def get_calibration(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
+    return Decimal(dll.GetCalWavelength(1, 0.0))
+
+
+def get_calibration_ba_0(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
+    return Decimal(dll.GetCalWavelength(0, 0.0))
+
+
+def get_calibration_dif(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
+    return Decimal(dll.GetCalWavelength(1, 0.0) - dll.GetCalWavelength(0, 0.0))

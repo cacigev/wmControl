@@ -235,3 +235,17 @@ class Wavemeter:
     @_lock_wavemeter
     async def get_temperature(self):
         return await self.__wrapper(wlmData.get_temperature)
+
+    @_lock_wavemeter
+    async def get_calibration(self):
+        return await self.__wrapper(wlmData.get_calibration)
+
+
+    @_lock_wavemeter
+    async def get_calibration_ba_0(self):
+        return await self.__wrapper(wlmData.get_calibration_ba_0)
+
+
+    @_lock_wavemeter
+    async def get_calibration_dif(self):
+        return await self.__wrapper(wlmData.get_calibration_dif)
