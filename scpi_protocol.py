@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+from dataclasses import dataclass
 from decimal import Decimal
 from functools import partial
 from typing import Callable, Iterable
@@ -12,12 +13,37 @@ from wmControl.wavemeter import Wavemeter
 from wmControl.wlmConst import WavemeterType, LowSignalError
 
 
+@dataclass
 class ScpiException(Exception):
-    pass
+    """Syntax errors of scpi-command. See also SCPI-Volume 2-Command Reference page 21-13 and 21-15ff."""
+    error_code: int
+    error_description: str
 
 
+@dataclass(init=False)
 class InvalidSyntaxException(ScpiException):
-    pass
+    """Invalid syntax"""
+    error_info: str
+
+    def __init__(self, info: str):
+        super().__init__(error_code=-102, error_description="Invalid syntax", error_info=info)
+
+
+    def __str__(self):
+        return f'{self.error_code},"{self.error_description};{self.error_info}"'
+
+
+@dataclass(init=False)
+class UnexpectedNumberOfParameterException(ScpiException):
+    """Too many or few parameters."""
+    error_info: str
+
+    def __init__(self, info: str):
+        super().__init__(error_code=-115, error_description="Unexpected number of parameters", error_info=info)
+
+
+    def __str__(self):
+        return f'{self.error_code},"{self.error_description};"'#{self.error_info}"'
 
 
 def _encode_idn(value: tuple[WavemeterType, int, tuple[int, int]]) -> str:
@@ -55,12 +81,12 @@ def _parse_channel_list(channels: str) -> list[int]:
     """
     sanitized_channels = match_channel_list.match(channels)
     if sanitized_channels is None:
-        raise InvalidSyntaxException(f"The parameter '{channels}' is not a valid channel_list.")
+        raise UnexpectedNumberOfParameterException(f"{channels}")
 
     parsed_channels = []
     for channel in sanitized_channels.group(1).split(","):
         if match_channel.match(channel) is None:
-            raise InvalidSyntaxException(f"The channel '{channel}' is not a valid channel selector.")
+            raise InvalidSyntaxException(f"{channel}")
 
         try:
             parsed_channels.append(int(channel))

@@ -9,7 +9,7 @@ from typing import Any, Callable, Coroutine, Iterable, Sequence
 from decouple import config
 from scpi import Commands, split_line
 
-from scpi_protocol import InvalidSyntaxException, create_scpi_protocol
+from scpi_protocol import InvalidSyntaxException, create_scpi_protocol, UnexpectedNumberOfParameterException
 from wmControl.wavemeter import Wavemeter
 from wmControl.wlmConst import LowSignalError
 
@@ -111,8 +111,13 @@ async def write_stream(
                     result = await function_call(parsed_command["decode"](scpi_request.args))
                 else:
                     result = await function_call()
-            except InvalidSyntaxException:
+            except InvalidSyntaxException as ex:
                 # TODO: reply with an error
+                logging.getLogger(__name__).info(ex.__str__())
+                continue
+            except UnexpectedNumberOfParameterException as ex:
+                # TODO: reply with an error
+                logging.getLogger(__name__).info(ex.__str__())
                 continue
             except TimeoutError:
                 logging.getLogger(__name__).debug("Timeout error while querying the wavemeter. Dropping request.")
