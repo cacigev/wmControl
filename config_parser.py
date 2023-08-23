@@ -11,6 +11,7 @@ def parse_wavemeter_config(
 ) -> list[tuple[int, IPv4Interface | IPv6Interface | tuple[IPv4Interface | IPv6Interface] | None, int]]:
     """
     Parse the wavemeter config supplied via the WAVEMETERS environment variable.
+
     Parameters
     ----------
     wavemeter_configs: str
@@ -29,6 +30,7 @@ def parse_wavemeter_config(
 def parse_log_level(log_level: int | str) -> int:
     """
     Parse an int or string, then return its standard log level definition.
+
     Parameters
     ----------
     log_level: int or str

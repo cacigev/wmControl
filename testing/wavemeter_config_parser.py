@@ -4,7 +4,7 @@ from contextlib import nullcontext as does_not_raise
 from ipaddress import IPv4Interface, IPv6Interface, ip_interface
 
 import pytest
-from pydantic_core._pydantic_core import ValidationError
+from pydantic import ValidationError
 
 from config_parser import parse_wavemeter_config
 

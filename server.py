@@ -7,8 +7,7 @@ import sys
 from typing import Any, Callable, Coroutine, Iterable, Sequence
 
 from decouple import UndefinedValueError, config
-from pydantic import IPvAnyInterface
-from pydantic_core._pydantic_core import ValidationError
+from pydantic import IPvAnyInterface, ValidationError
 from scpi import Commands, split_line
 
 from config_parser import parse_log_level, parse_wavemeter_config
