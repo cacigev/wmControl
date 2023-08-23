@@ -9,7 +9,7 @@ from typing import Callable, Iterable
 from scpi import Cmd, Commands
 
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import WavemeterType
+from wmControl.wlmConst import WavemeterType, LowSignalError
 
 
 class ScpiException(Exception):
@@ -82,7 +82,18 @@ async def _query_channel(
 ) -> Iterable[int] | Iterable[float] | Iterable[Decimal]:
     coros = [function(channel) for channel in channels]
 
-    results = await asyncio.gather(*coros)
+    # results = await asyncio.gather(*coros)
+    # return results
+    # results = []
+    # for coro in asyncio.as_completed(coros):
+    #     try:
+    #         results.append(await coro)
+    #     except LowSignalError:
+    #         results.append("-1")
+
+    results = await asyncio.gather(*coros, return_exceptions=True)
+    if LowSignalError in results:
+        results = ["-1" if result is LowSignalError() else result for result in results]
     return results
 
 

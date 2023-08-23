@@ -115,13 +115,8 @@ async def write_stream(
                 # TODO: reply with an error
                 continue
             except TimeoutError:
-                logging.getLogger(__name__).debug("Timeout error while querying the wavemeter. Dropping request,")
+                logging.getLogger(__name__).debug("Timeout error while querying the wavemeter. Dropping request.")
                 break
-            # TODO: LowSignal error exception
-            # except LowSignalError:
-            #     writer.write(("-1" + "\n").encode())
-            #     print("Send -1")
-            #     continue
 
             if scpi_request.query:
                 writer.write((parsed_command["encode"](result) + "\n").encode())
