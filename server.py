@@ -2,51 +2,28 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import sys
 from typing import Any, Callable, Coroutine, Iterable, Sequence
 
 from decouple import UndefinedValueError, config
-from pydantic import BaseModel, IPvAnyAddress, IPvAnyInterface, TypeAdapter
+from pydantic import IPvAnyInterface
 from pydantic_core._pydantic_core import ValidationError
 from scpi import Commands, split_line
 
+from config_parser import parse_log_level, parse_wavemeter_config
 from scpi_protocol import (
     InvalidSyntaxException,
     UnexpectedNumberOfParameterException,
     create_scpi_protocol,
 )
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import LowSignalError
 
 dll_path = None
 if sys.platform == "win32":
     dll_path = "./wmControl/wlmData.dll"
 elif sys.platform == "linux":
     dll_path = "./wmControl/libwlmData.so"
-
-
-def parse_log_level(log_level: int | str) -> int:
-    """
-    Parse an int or string, then return its standard log level definition.
-    Parameters
-    ----------
-    log_level: int or str
-        The log level. Either a string or a number.
-    Returns
-    -------
-    int
-        The log level as defined by the standard library. Returns logging.INFO as default
-    """
-    try:
-        level = int(log_level)
-    except ValueError:
-        # parse the string
-        level = logging.getLevelName(str(log_level).upper())
-    if isinstance(level, int):
-        return level
-    return logging.INFO  # default log level
 
 
 async def read_stream(reader: asyncio.StreamReader, job_queue: asyncio.Queue[bytes]) -> None:
@@ -268,9 +245,7 @@ logging.basicConfig(
 # 4711: Quips B WS-8 192.168.1.240
 # 4734: Quips C WS-8 192.168.1.45
 try:
-    wavemeter_config = config("WAVEMETERS")
-    ta = TypeAdapter(list[tuple[int, IPvAnyInterface | tuple[IPvAnyInterface] | None, int]])
-    wavemeters = ta.validate_json(wavemeter_config)
+    wavemeters = parse_wavemeter_config(config("WAVEMETERS"))
 except UndefinedValueError:
     logging.getLogger(__name__).error("No wavemeters defined. Check the 'WAVEMETERS' environment variable.")
 except ValidationError as exc:
