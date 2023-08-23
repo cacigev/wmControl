@@ -210,6 +210,13 @@ class MeasureMode(IntEnum):
     cmiAnalogOut8 = 242
     cmiIntensity = 251
     cmiPower = 267
+    cmiPower1 = 268
+    cmiPower2 = 269
+    cmiPower3 = 270
+    cmiPower4 = 271
+    cmiPower5 = 272
+    cmiPower6 = 273
+    cmiPower7 = 274
     cmiActiveChannel = 300
     cmiPIDCourse = 1030
     cmiPIDUseTa = 1031
@@ -2273,6 +2280,109 @@ class Exposure28(Exposure):
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=8, ccd_array=2)
+
+
+@dataclass
+class Power(DataPackage):
+    """
+    The measured signal power in microwatt of the current shot. See also manual page 71 GetPowerNum.
+    Do not directly instantiate this class. Use a sibling to correctly set the channel and mode enum.
+
+    Attributes
+    ----------
+    product_id : int
+        Product id (version) of the WM. Might be a serial number. Do not count on it though.
+    value : Decimal
+        The power of the current measurement shot.
+    channel : int
+        Channel of the wavemeter. The channel is a 0 based index.
+    """
+
+    value: Decimal
+    channel: int
+
+    def __str__(self):
+        return f"Power measurement: power {self.value} muW | channel {self.channel} | wavemeter {self.product_id}."
+
+
+@dataclass(init=False)
+class Power1(Power):
+    """The power of channel 1."""
+
+    mode = MeasureMode.cmiPower
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=1)
+
+
+@dataclass(init=False)
+class Power2(Power):
+    """The power of channel 2."""
+
+    mode = MeasureMode.cmiPower1
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=2)
+
+
+@dataclass(init=False)
+class Power3(Power):
+    """The power of channel 3."""
+
+    mode = MeasureMode.cmiPower2
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=3)
+
+
+@dataclass(init=False)
+class Power4(Power):
+    """The power of channel 4."""
+
+    mode = MeasureMode.cmiPower3
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=4)
+
+
+@dataclass(init=False)
+class Power5(Power):
+    """The power of channel 5."""
+
+    mode = MeasureMode.cmiPower4
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=5)
+
+
+@dataclass(init=False)
+class Power6(Power):
+    """The power of channel 6."""
+
+    mode = MeasureMode.cmiPower5
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=6)
+
+
+@dataclass(init=False)
+class Power7(Power):
+    """The power of channel 7."""
+
+    mode = MeasureMode.cmiPower6
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=7)
+
+
+@dataclass(init=False)
+class Power8(Power):
+    """The power of channel 8."""
+
+    mode = MeasureMode.cmiPower7
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=Decimal(int_val), channel=8)
 
 
 class WavemeterException(Exception):
