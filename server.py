@@ -251,7 +251,6 @@ async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[
         else:
             interface_str = None
 
-        print(interface_str)
         server = asyncio.create_task(create_wm_server(wavemeter_id, interface_str, port))
         server_list.add(server)
 
@@ -270,7 +269,7 @@ logging.basicConfig(
 # 4734: Quips C WS-8 192.168.1.45
 try:
     wavemeter_config = config("WAVEMETERS")
-    ta = TypeAdapter(list[tuple[int, IPvAnyInterface | tuple[IPvAnyInterface], int]])
+    ta = TypeAdapter(list[tuple[int, IPvAnyInterface | tuple[IPvAnyInterface] | None, int]])
     wavemeters = ta.validate_json(wavemeter_config)
 except UndefinedValueError:
     logging.getLogger(__name__).error("No wavemeters defined. Check the 'WAVEMETERS' environment variable.")
