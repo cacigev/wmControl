@@ -2,14 +2,21 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import sys
 from typing import Any, Callable, Coroutine, Iterable, Sequence
 
-from decouple import config
+from decouple import UndefinedValueError, config
+from pydantic import BaseModel, IPvAnyAddress, IPvAnyInterface, TypeAdapter
+from pydantic_core._pydantic_core import ValidationError
 from scpi import Commands, split_line
 
-from scpi_protocol import InvalidSyntaxException, create_scpi_protocol, UnexpectedNumberOfParameterException
+from scpi_protocol import (
+    InvalidSyntaxException,
+    UnexpectedNumberOfParameterException,
+    create_scpi_protocol,
+)
 from wmControl.wavemeter import Wavemeter
 from wmControl.wlmConst import LowSignalError
 
@@ -224,14 +231,28 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
         )
 
         async with server:
-            logging.getLogger(__name__).info("Serving wavemeter %i on %s:%i", wavemeter.product_id, interface, port)
+            logging.getLogger(__name__).info(
+                "Serving wavemeter %i on %s",
+                wavemeter.product_id,
+                ", ".join(f"{sock.getsockname()[0]}:{sock.getsockname()[1]}" for sock in server.sockets),
+            )
             await server.serve_forever()
 
 
-async def main(wavemeter_config: Iterable[tuple[int, tuple[str | Sequence[str] | None, int]]]):
+async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[IPvAnyInterface] | None, int]]):
     server_list: set[asyncio.Task] = set()
-    for wavemeter_id, (interface, port) in wavemeter_config:
-        server = asyncio.create_task(create_wm_server(wavemeter_id, interface, port))
+    for wavemeter_id, interface, port in wavemeter_config:
+        if interface is not None:
+            try:
+                interface_str = [str(iface.ip for iface in interface)]
+            except TypeError:
+                # Not an iterable
+                interface_str = str(interface.ip)
+        else:
+            interface_str = None
+
+        print(interface_str)
+        server = asyncio.create_task(create_wm_server(wavemeter_id, interface_str, port))
         server_list.add(server)
 
     await asyncio.gather(*server_list)
@@ -244,13 +265,21 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
+# 536: Quips B WS-6 192.168.1.240
+# 4711: Quips B WS-8 192.168.1.240
+# 4734: Quips C WS-8 192.168.1.45
 try:
-    # 536: Quips B WS-6 192.168.1.240
-    # 4711: Quips B WS-8 192.168.1.240
-    # 4734: Quips C WS-8 192.168.1.45
-    wm_list = [(4734, ("127.0.0.1", 5555))]
-    asyncio.run(main(wm_list))
-except KeyboardInterrupt:
-    pass
-finally:
-    logging.getLogger(__name__).info("Application shut down.")
+    wavemeter_config = config("WAVEMETERS")
+    ta = TypeAdapter(list[tuple[int, IPvAnyInterface | tuple[IPvAnyInterface], int]])
+    wavemeters = ta.validate_json(wavemeter_config)
+except UndefinedValueError:
+    logging.getLogger(__name__).error("No wavemeters defined. Check the 'WAVEMETERS' environment variable.")
+except ValidationError as exc:
+    logging.getLogger(__name__).error(f"Invalid wavemeter configuration: {exc}")
+else:
+    try:
+        asyncio.run(main(wavemeters))
+    except KeyboardInterrupt:
+        pass
+    finally:
+        logging.getLogger(__name__).info("Application shut down.")
