@@ -15,7 +15,7 @@ from wmControl.wlmConst import WavemeterType, LowSignalError
 
 @dataclass
 class ScpiException(Exception):
-    """Syntax errors of scpi-command. See also SCPI-Volume 2-Command Reference page 21-13 and 21-15ff."""
+    """Syntax errors of scpi-command. See also SCPI-Volume 2-Command Reference page 517 and 520ff."""
     error_code: int
     error_description: str
 
@@ -119,7 +119,7 @@ async def _query_channel(
 
     results = await asyncio.gather(*coros, return_exceptions=True)
     if LowSignalError in results:
-        results = ["-1" if result is LowSignalError() else result for result in results]
+        results = ["-230" if result is LowSignalError() else result for result in results]
     return results
 
 
@@ -164,8 +164,6 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
             "MEASure:TEMPerature": NumberCmdR(decode=lambda x: x, get=wavemeter.get_temperature),
             "GET:CHannel": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel),
             "GET:CHannel:COUNT": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel_count),
-            "GET:CALibration": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration),  # Not SCPI conform
-            "GET:CAL:TEST": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration_ba_0),  # Not SCPI conform
-            "GET:CAL:DIF": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration_dif),  # Not SCPI conform
+            "CALibration[:WAVElength]": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration_wavelength),
         }
     )

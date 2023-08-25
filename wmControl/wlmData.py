@@ -901,13 +901,13 @@ def get_temperature(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
     return Decimal(dll.GetTemperature(0.0))
 
 
-def get_calibration(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
-    return Decimal(dll.GetCalWavelength(1, 0.0))
-
-
-def get_calibration_ba_0(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
-    return Decimal(dll.GetCalWavelength(0, 0.0))
+def get_calibration(dll: ctypes.WinDLL | ctypes.CDLL, before_after: int) -> Decimal:
+    return Decimal(dll.GetCalWavelength(before_after, 0.0))
 
 
 def get_calibration_dif(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
     return Decimal(dll.GetCalWavelength(1, 0.0) - dll.GetCalWavelength(0, 0.0))
+
+
+def get_calibration_wavelength(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
+    return Decimal(dll.GetWavelengthNum(8, 0.0))
