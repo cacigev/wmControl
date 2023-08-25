@@ -209,14 +209,14 @@ class MeasureMode(IntEnum):
     cmiAnalogOut7 = 241
     cmiAnalogOut8 = 242
     cmiIntensity = 251
-    cmiPower = 267
-    cmiPower1 = 268
-    cmiPower2 = 269
-    cmiPower3 = 270
-    cmiPower4 = 271
-    cmiPower5 = 272
-    cmiPower6 = 273
-    cmiPower7 = 274
+    cmiPower1 = 267
+    cmiPower2 = 268
+    cmiPower3 = 269
+    cmiPower4 = 270
+    cmiPower5 = 271
+    cmiPower6 = 272
+    cmiPower7 = 273
+    cmiPower8 = 274
     cmiActiveChannel = 300
     cmiPIDCourse = 1030
     cmiPIDUseTa = 1031
@@ -2309,7 +2309,7 @@ class Power(DataPackage):
 class Power1(Power):
     """The power of channel 1."""
 
-    mode = MeasureMode.cmiPower
+    mode = MeasureMode.cmiPower1
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=1)
@@ -2319,7 +2319,7 @@ class Power1(Power):
 class Power2(Power):
     """The power of channel 2."""
 
-    mode = MeasureMode.cmiPower1
+    mode = MeasureMode.cmiPower2
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=2)
@@ -2329,7 +2329,7 @@ class Power2(Power):
 class Power3(Power):
     """The power of channel 3."""
 
-    mode = MeasureMode.cmiPower2
+    mode = MeasureMode.cmiPower3
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=3)
@@ -2339,7 +2339,7 @@ class Power3(Power):
 class Power4(Power):
     """The power of channel 4."""
 
-    mode = MeasureMode.cmiPower3
+    mode = MeasureMode.cmiPower4
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=4)
@@ -2349,7 +2349,7 @@ class Power4(Power):
 class Power5(Power):
     """The power of channel 5."""
 
-    mode = MeasureMode.cmiPower4
+    mode = MeasureMode.cmiPower5
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=5)
@@ -2359,7 +2359,7 @@ class Power5(Power):
 class Power6(Power):
     """The power of channel 6."""
 
-    mode = MeasureMode.cmiPower5
+    mode = MeasureMode.cmiPower6
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=6)
@@ -2369,7 +2369,7 @@ class Power6(Power):
 class Power7(Power):
     """The power of channel 7."""
 
-    mode = MeasureMode.cmiPower6
+    mode = MeasureMode.cmiPower7
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=7)
@@ -2379,7 +2379,7 @@ class Power7(Power):
 class Power8(Power):
     """The power of channel 8."""
 
-    mode = MeasureMode.cmiPower7
+    mode = MeasureMode.cmiPower8
 
     def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=8)
