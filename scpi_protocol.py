@@ -151,13 +151,13 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
             "*TST": "Self-Test Query",
             "*WAI": "Wait-to-Continue Command",
             # Device specific commands.
-            "MEASure:WAVElength:CHannel": NumberCmdR(
+            "MEASure:WAVElength": NumberCmdR(
                 decode=_parse_channel_list,
                 get=partial(_query_channel, wavemeter.get_wavelength),
                 doc="wavelength measurement query",
             ),  # wavelength of specific channel
             # Note for thesis: Calling wavelength and right after frequency leads to two different measurements.
-            "MEASure:FREQuency:CHannel": NumberCmdR(
+            "MEASure:FREQuency": NumberCmdR(
                 decode=_parse_channel_list,
                 get=partial(_query_channel, wavemeter.get_frequency),
                 doc="frequency measurement query",
