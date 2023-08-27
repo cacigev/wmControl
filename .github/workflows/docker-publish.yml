@@ -2,7 +2,7 @@ name: Docker
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
     # Publish pep440 tags as releases.
     tags: [ '*.*.*' ]
 
