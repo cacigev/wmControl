@@ -28,4 +28,4 @@ jobs:
         python3 -m pip install pytest
     - name: Test with pytest
       run: |
-        pytest --exitfirst --verbose --failed-first
+        pytest --exitfirst --verbose --failed-first testing/*

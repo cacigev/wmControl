@@ -18,7 +18,7 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-ADD https://api.github.com/repos/${GIT_REPOSITORY}/git/refs/heads/master version.json
+ADD https://api.github.com/repos/${GIT_REPOSITORY}/git/refs/heads/main version.json
 RUN COLOUR='\e[1;93m' && \
   echo -e "${COLOUR}Installing HighFinesse SCPI server...\e[0m" && \
   git clone https://github.com/${GIT_REPOSITORY} app && \
