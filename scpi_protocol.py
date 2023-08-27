@@ -10,12 +10,13 @@ from typing import Callable, Iterable
 from scpi import Cmd, Commands
 
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import WavemeterType, LowSignalError
+from wmControl.wlmConst import LowSignalError, WavemeterType
 
 
 @dataclass
 class ScpiException(Exception):
     """Syntax errors of scpi-command. See also SCPI-Volume 2-Command Reference page 517 and 520ff."""
+
     error_code: int
     error_description: str
 
@@ -23,11 +24,11 @@ class ScpiException(Exception):
 @dataclass(init=False)
 class InvalidSyntaxException(ScpiException):
     """Invalid syntax"""
+
     error_info: str
 
     def __init__(self, info: str):
         super().__init__(error_code=-102, error_description="Invalid syntax", error_info=info)
-
 
     def __str__(self):
         return f'{self.error_code},"{self.error_description};{self.error_info}"'
@@ -36,14 +37,14 @@ class InvalidSyntaxException(ScpiException):
 @dataclass(init=False)
 class UnexpectedNumberOfParameterException(ScpiException):
     """Too many or few parameters."""
+
     error_info: str
 
     def __init__(self, info: str):
         super().__init__(error_code=-115, error_description="Unexpected number of parameters", error_info=info)
 
-
     def __str__(self):
-        return f'{self.error_code},"{self.error_description};"'#{self.error_info}"'
+        return f'{self.error_code},"{self.error_description};"'  # {self.error_info}"'
 
 
 def _encode_idn(value: tuple[WavemeterType, int, tuple[int, int]]) -> str:
@@ -164,6 +165,11 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
             "MEASure:TEMPerature": NumberCmdR(decode=lambda x: x, get=wavemeter.get_temperature),
             "GET:CHannel": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel),
             "GET:CHannel:COUNT": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel_count),
-            "CALibration[:WAVElength]": NumberCmdR(decode=lambda x: x, get=wavemeter.get_calibration_wavelength),
+            "CALibration:WAVElength[:POSTcal]": NumberCmdR(
+                decode=lambda x: x, get=partial(wavemeter.get_calibration_wavelength, False)
+            ),
+            "CALibration:WAVElength:PRECal": NumberCmdR(
+                decode=lambda x: x, get=partial(wavemeter.get_calibration_wavelength, True)
+            ),
         }
     )
