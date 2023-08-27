@@ -8,14 +8,10 @@ from typing import Any, Callable, Coroutine, Iterable, Sequence
 
 from decouple import UndefinedValueError, config
 from pydantic import IPvAnyInterface, ValidationError
-from scpi import Commands, split_line
+from scpi import Commands, __version__, split_line
 
 from config_parser import parse_log_level, parse_wavemeter_config
-from scpi_protocol import (
-    InvalidSyntaxException,
-    UnexpectedNumberOfParameterException,
-    create_scpi_protocol,
-)
+from scpi_protocol import InvalidSyntaxException, UnexpectedNumberOfParameterException, create_scpi_protocol
 from wmControl.wavemeter import Wavemeter
 
 dll_path = None
@@ -217,6 +213,11 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
 
 async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[IPvAnyInterface] | None, int]]):
     server_list: set[asyncio.Task] = set()
+
+    logging.getLogger(__name__).warning("#################################################")
+    logging.getLogger(__name__).warning("Starting SCPI deamon v%s...", __version__)
+    logging.getLogger(__name__).warning("#################################################")
+
     for wavemeter_id, interface, port in wavemeter_config:
         if interface is not None:
             try:
@@ -255,4 +256,6 @@ else:
     except KeyboardInterrupt:
         pass
     finally:
-        logging.getLogger(__name__).info("Application shut down.")
+        logging.getLogger(__name__).warning("#################################################")
+        logging.getLogger(__name__).warning("Stopping SCPI daemon...")
+        logging.getLogger(__name__).warning("#################################################")
