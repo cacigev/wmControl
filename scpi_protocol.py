@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import re
-from dataclasses import dataclass
 from decimal import Decimal
 from functools import partial
 from typing import Callable, Iterable
@@ -13,38 +12,44 @@ from wmControl.wavemeter import Wavemeter
 from wmControl.wlmConst import LowSignalError, WavemeterType
 
 
-@dataclass
 class ScpiException(Exception):
     """Syntax errors of scpi-command. See also SCPI-Volume 2-Command Reference page 517 and 520ff."""
 
-    error_code: int
-    error_description: str
+    @property
+    def error_code(self) -> int:
+        return self.__error_code
+
+    @property
+    def error_description(self) -> str:
+        return self.__error_description
+
+    def __init__(self, error_code: int, error_description: str):
+        self.__error_code = error_code
+        self.__error_description = error_description
+
+    def __str__(self):
+        return f"{self.__error_code},{self.error_description.upper()}"
 
 
-@dataclass(init=False)
 class InvalidSyntaxException(ScpiException):
     """Invalid syntax"""
 
-    error_info: str
-
-    def __init__(self, info: str):
-        super().__init__(error_code=-102, error_description="Invalid syntax", error_info=info)
-
-    def __str__(self):
-        return f'{self.error_code},"{self.error_description};{self.error_info}"'
+    def __init__(self):
+        super().__init__(error_code=-102, error_description="Invalid syntax")
 
 
-@dataclass(init=False)
+class CommandHeaderError(ScpiException):
+    """An unspecified error was detected in the header."""
+
+    def __init__(self):
+        super().__init__(error_code=-110, error_description="Command header error")
+
+
 class UnexpectedNumberOfParameterException(ScpiException):
     """Too many or few parameters."""
 
-    error_info: str
-
-    def __init__(self, info: str):
-        super().__init__(error_code=-115, error_description="Unexpected number of parameters", error_info=info)
-
-    def __str__(self):
-        return f'{self.error_code},"{self.error_description};"'  # {self.error_info}"'
+    def __init__(self):
+        super().__init__(error_code=-115, error_description="Unexpected number of parameters")
 
 
 def _encode_idn(value: tuple[WavemeterType, int, tuple[int, int]]) -> str:
@@ -82,12 +87,12 @@ def _parse_channel_list(channels: str) -> list[int]:
     """
     sanitized_channels = match_channel_list.match(channels)
     if sanitized_channels is None:
-        raise UnexpectedNumberOfParameterException(f"{channels}")
+        raise CommandHeaderError()
 
     parsed_channels = []
     for channel in sanitized_channels.group(1).split(","):
         if match_channel.match(channel) is None:
-            raise InvalidSyntaxException(f"{channel}")
+            raise CommandHeaderError()
 
         try:
             parsed_channels.append(int(channel))
