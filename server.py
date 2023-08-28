@@ -215,7 +215,7 @@ async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[
     server_list: set[asyncio.Task] = set()
 
     logging.getLogger(__name__).warning("#################################################")
-    logging.getLogger(__name__).warning("Starting SCPI deamon v%s...", __version__)
+    logging.getLogger(__name__).warning("Starting SCPI daemon v%s...", __version__)
     logging.getLogger(__name__).warning("#################################################")
 
     for wavemeter_id, interface, port in wavemeter_config:
