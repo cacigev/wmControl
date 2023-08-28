@@ -7,6 +7,7 @@ ARG SSH_DEPLOY_KEY
 # Install the build dependencies
 RUN COLOUR='\e[1;93m' && \
   test -n "$GIT_REPOSITORY" || (echo "\e[0;31mGIT_REPOSITORY  not set.\e[0m" && false) && \
+    test -n "$SSH_DEPLOY_KEY" || (echo "\e[0;31mSSH_DEPLOY_KEY  not set.\e[0m" && false) && \
   echo -e "${COLOUR}Installing build dependencies...\e[0m" && \
   apk --no-cache add --virtual=build-dependencies \
     openssh \
