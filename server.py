@@ -11,7 +11,7 @@ from pydantic import IPvAnyInterface, ValidationError
 from scpi import Commands, __version__, split_line
 
 from config_parser import parse_log_level, parse_wavemeter_config
-from scpi_protocol import ScpiException, create_scpi_protocol
+from scpi_protocol import ScpiException, UnexpectedNumberOfParameterException, create_scpi_protocol
 from wmControl.wavemeter import Wavemeter
 
 dll_path = None
@@ -86,13 +86,17 @@ async def write_stream(
             result: str
 
             try:
-                if scpi_request.args:
-                    result = await function_call(parsed_command["decode"](scpi_request.args))
-                else:
-                    result = await function_call()
+                try:
+                    if scpi_request.args:
+                        coro = function_call(parsed_command["decode"](scpi_request.args))
+                    else:
+                        coro = function_call()
+                except TypeError:
+                    raise UnexpectedNumberOfParameterException from None
+                result = await coro
             except ScpiException as exc:
                 # Return a SCPI error
-                writer.write(str(exc).encode())
+                writer.write(f"{exc}\n".encode())
                 continue
             except TimeoutError:
                 logging.getLogger(__name__).debug("Timeout error while querying the wavemeter. Dropping request.")
