@@ -23,6 +23,8 @@ RUN COLOUR='\e[1;93m' && \
   echo -e "${COLOUR}Installing HighFinesse SCPI server...\e[0m" && \
   mkdir /root/.ssh/ && \
   echo "${SSH_DEPLOY_KEY}" > /root/.ssh/id_rsa && \
+  chmod 600 /root/.ssh/id_rsa && \
+  ssh-keyscan github.com >> /root/.ssh/known_hosts && \
   git clone git@github.com:${GIT_REPOSITORY}.git app && \
   pip install -r /app/requirements.txt && \
   echo -e "${COLOUR}Done.\e[0m"
