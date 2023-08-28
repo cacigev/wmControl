@@ -2,6 +2,7 @@ FROM alpine:3.18 as builder
 
 ARG BUILD_CORES
 ARG GIT_REPOSITORY
+ARG SSH_DEPLOY_KEY
 
 # Install the build dependencies
 RUN COLOUR='\e[1;93m' && \
@@ -20,7 +21,9 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN COLOUR='\e[1;93m' && \
   echo -e "${COLOUR}Installing HighFinesse SCPI server...\e[0m" && \
-  git clone https://github.com/${GIT_REPOSITORY} app && \
+  mkdir /root/.ssh/ && \
+  echo "${SSH_DEPLOY_KEY}" > /root/.ssh/id_rsa && \
+  git clone git@github.com:${GIT_REPOSITORY}.git app && \
   pip install -r /app/requirements.txt && \
   echo -e "${COLOUR}Done.\e[0m"
 
