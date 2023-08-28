@@ -28,7 +28,7 @@ class ScpiException(Exception):
         self.__error_description = error_description
 
     def __str__(self):
-        return f"{self.__error_code},{self.error_description.upper()}"
+        return f"{self.__error_code},{self.__error_description.upper()}"
 
 
 class InvalidSyntaxException(ScpiException):
