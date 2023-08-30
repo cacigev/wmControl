@@ -981,7 +981,7 @@ class PID_P(PID):
 
     mode = MeasureMode.cmiPID_P
 
-    def __init__(self, version, int_val, double_val):
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="P")
 
 
@@ -991,7 +991,7 @@ class PID_I(PID):
 
     mode = MeasureMode.cmiPID_I
 
-    def __init__(self, version, int_val, double_val):
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="I")
 
 
@@ -1001,7 +1001,7 @@ class PID_D(PID):
 
     mode = MeasureMode.cmiPID_D
 
-    def __init__(self, version, int_val, double_val):
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="D")
 
 
@@ -1011,7 +1011,7 @@ class PID_T(PID):
 
     mode = MeasureMode.cmiPID_T
 
-    def __init__(self, version, int_val, double_val):
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="T")
 
 
@@ -1021,7 +1021,7 @@ class PID_dt(PID):
 
     mode = MeasureMode.cmiPID_dt
 
-    def __init__(self, version, int_val, double_val):
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="dt")
 
 
@@ -1430,7 +1430,7 @@ class Min1(Min):
 
     mode = MeasureMode.cmiMin1
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=0)
 
 
@@ -1440,7 +1440,7 @@ class Min2(Min):
 
     mode = MeasureMode.cmiMin2
 
-    def __init__(self, version, int_val):
+    def __init__(self, version, int_val, *_args, **_kwargs):
         super().__init__(product_id=version, value=Decimal(int_val), channel=0, ccd_array=1)
 
 
