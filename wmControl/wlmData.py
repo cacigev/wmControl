@@ -841,7 +841,7 @@ def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     if result <= 0:
         raise wavemeter_exceptions[result]
 
-    return Decimal(result)
+    return Decimal(result) * 10**-9  # Result in m
 
 
 def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
@@ -850,7 +850,7 @@ def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     if result <= 0:
         raise wavemeter_exceptions[result]
 
-    return Decimal(result)
+    return Decimal(result) * 10**12  # Result in Hz
 
 
 def get_switch_mode(dll: ctypes.WinDLL | ctypes.CDLL) -> bool:
