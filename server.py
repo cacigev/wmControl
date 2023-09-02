@@ -8,8 +8,9 @@ from typing import Any, Callable, Coroutine, Iterable, Sequence
 
 from decouple import UndefinedValueError, config
 from pydantic import IPvAnyInterface, ValidationError
-from scpi import Commands, __version__, split_line
+from scpi import Commands, split_line
 
+from _version import __version__
 from config_parser import parse_log_level, parse_wavemeter_config
 from scpi_protocol import ScpiException, UnexpectedNumberOfParameterException, create_scpi_protocol
 from wmControl.wavemeter import Wavemeter
