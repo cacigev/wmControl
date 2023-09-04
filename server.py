@@ -17,8 +17,13 @@ from wmControl.wavemeter import Wavemeter
 
 dll_path = None
 if sys.platform == "win32":
-    dll_path = "./wmControl/wlmData.dll"
+    if config("CONNECTION_TYPE", default="REMOTE") == "LOCAL":
+        dll_path = "C:/Windows/System32/wlmData.dll"
+    else:
+        dll_path = "./wmControl/wlmData.dll"
 elif sys.platform == "linux":
+    if config("CONNECTION_TYPE") == "LOCAL":
+        raise ValueError("Cannot connect locally using Linux.")
     dll_path = "./wmControl/libwlmData.so"
 
 
