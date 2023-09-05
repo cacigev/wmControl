@@ -9,7 +9,7 @@ from typing import Callable, Iterable
 from scpi import Cmd, Commands
 
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import LowSignalError, WavemeterType
+from wmControl.wlmConst import LowSignalError, NoValueError, WavemeterException, WavemeterType
 
 
 class ScpiException(Exception):
@@ -57,12 +57,26 @@ def _encode_idn(value: tuple[WavemeterType, int, tuple[int, int]]) -> str:
     return f"HighFinesse,{wavemeter.name},{serial},{software_version[0]}.{software_version[1]}".upper()
 
 
+def _map_to_scpi_value(value: int | float | Decimal) -> str:
+    if value != value:
+        # Test for NaN and replace it with "9.91e37" as per SCPI-99
+        return str(Decimal("9.91e37"))
+    if float(value) == float("inf"):
+        return str(Decimal("9.9e37"))
+    if float(value) == float("-inf"):
+        return str(Decimal("-9.9e37"))
+    return str(value)
+
+
 def _encode_number(values: int | float | Decimal | Iterable[float] | Iterable[float] | Iterable[Decimal]) -> str:
     try:
-        return ",".join(map(str, values))
+        # TODO: Map +INF and -INF as well
+        values = map(_map_to_scpi_value, values)
     except TypeError:
         # if values is not a list
-        return str(values)
+        values = (_map_to_scpi_value(values),)
+
+    return ",".join(values)
 
 
 # matches channel_lists. See page 8-4 of the SCPI-99 "syntax and style" handbook of the SCPI standard
@@ -126,8 +140,16 @@ async def _query_channel(
     #         results.append("-1")
 
     results = await asyncio.gather(*coros, return_exceptions=True)
-    if LowSignalError in results:
-        results = ["-230" if result is LowSignalError() else result for result in results]
+    for i in range(len(results)):
+        if isinstance(results[i], NoValueError):
+            results[i] = Decimal("NaN")
+            continue
+        if isinstance(results[i], LowSignalError):
+            results[i] = Decimal("NaN")
+            continue
+        if isinstance(results[i], WavemeterException):
+            raise results[i]
+
     return results
 
 
