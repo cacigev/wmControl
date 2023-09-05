@@ -99,6 +99,7 @@ def _parse_channel_list(channels: str) -> list[int]:
         except ValueError:
             # The channel is a list not an int
             channel_range = list(map(int, channel.split(":")))
+            # Test if the list is ascending or descending
             if channel_range[1] >= channel_range[0]:
                 channel_range[1] += 1
                 parsed_channels.extend(range(*channel_range))
@@ -106,7 +107,8 @@ def _parse_channel_list(channels: str) -> list[int]:
                 channel_range[1] -= 1
                 parsed_channels.extend(range(*channel_range, -1))
 
-    return parsed_channels
+    # The Wavemeter lib uses zero-based numbering
+    return [channel - 1 for channel in parsed_channels]
 
 
 async def _query_channel(
