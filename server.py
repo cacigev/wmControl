@@ -51,7 +51,8 @@ async def write_stream(
     writer: asyncio.StreamWriter, protocol: Commands, job_queue: asyncio.Queue[bytes], device_timeout: float
 ) -> None:
     """
-    Writes the results into the stream.
+    Parses the SCPI request and replies if needed. This is the main worker, because it parses the SCPI request and does
+    the error handling.
 
     Parameter
     ---------
@@ -162,7 +163,7 @@ def create_client_handler(
                 done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
                 for completed_task in done:
                     try:
-                        exc = completed_task.exception()
+                        exc = completed_task.exception()  # Raises a CancelledError if the task has been cancelled
                     except asyncio.exceptions.CancelledError:
                         # If the task was canceled, there is no further action needed.
                         continue
