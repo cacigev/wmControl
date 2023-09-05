@@ -838,8 +838,8 @@ def LoadDLL(path):
 def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.GetWavelengthNum(channel + 1, 0.0)
-    if result <= 0:
-        raise wavemeter_exceptions[result]
+    if result in wavemeter_exceptions:
+        raise wavemeter_exceptions[result]("Error reading wavelength on channel %i", channel)
 
     return Decimal(result) * Decimal("1e-9")  # Result in m
 
@@ -847,8 +847,8 @@ def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
 def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.GetFrequencyNum(channel + 1, 0.0)
-    if result <= 0:
-        raise wavemeter_exceptions[result]
+    if result in wavemeter_exceptions:
+        raise wavemeter_exceptions[result]("Error reading frequency on channel %i", channel)
 
     return Decimal(result) * Decimal("1e12")  # Result in Hz
 
@@ -859,15 +859,15 @@ def get_switch_mode(dll: ctypes.WinDLL | ctypes.CDLL) -> bool:
 
 def set_switch_mode(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
     result = wavemeter_exceptions.get(dll.SetSwitcherMode(int(enable)))
-    if result < 0:
-        raise wavemeter_exceptions[result]
+    if result in wavemeter_exceptions:
+        raise wavemeter_exceptions[result]("Error setting switch mode to %s", enable)
 
 
 def set_channel(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> None:
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.SetSwitcherChannel(channel + 1)
-    if result < 0:
-        raise wavemeter_exceptions[result]
+    if result in wavemeter_exceptions:
+        raise wavemeter_exceptions[result]("Error setting channel to %i", channel)
 
 
 def get_channel(dll: ctypes.WinDLL | ctypes.CDLL) -> int:
@@ -890,7 +890,7 @@ def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType,
     wavemeter_type = dll.GetWLMVersion(0)
     # All exceptions are negative, so we can easily test against them
     if wavemeter_type in wavemeter_exceptions:
-        raise wavemeter_exceptions[wavemeter_type]
+        raise wavemeter_exceptions[wavemeter_type]("Error reading wavemeter info.")
     serial = dll.GetWLMVersion(1)
     software_revision = dll.GetWLMVersion(2)
     compilation_number = dll.GetWLMVersion(3)
