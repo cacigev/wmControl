@@ -2302,7 +2302,7 @@ class Power(DataPackage):
     channel: int
 
     def __str__(self):
-        return f"Power measurement: power {self.value} muW | channel {self.channel} | wavemeter {self.product_id}."
+        return f"Power measurement: power {self.value} µW | channel {self.channel} | wavemeter {self.product_id}."
 
 
 @dataclass(init=False)
