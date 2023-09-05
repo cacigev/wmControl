@@ -856,7 +856,7 @@ class TimeTick(DataPackage):
         return f"Time Tick: {self.value:.4f}  | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class Distance(DataPackage):
     """
     The distance between signal 1 and 2 in multichannel switch versions with Diff option.
@@ -876,11 +876,16 @@ class Distance(DataPackage):
     timestamp: int
     value: Decimal
 
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Distance measurement: {self.value} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class Linewidth(DataPackage):
     """
     The calculated linewidth in nm.
@@ -900,11 +905,16 @@ class Linewidth(DataPackage):
     timestamp: int
     value: Decimal
 
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Linewidth measurement: {self.value} nm | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class AnalogIn(DataPackage):
     """
     The analog input voltage in versions with analog input port.
@@ -924,11 +934,16 @@ class AnalogIn(DataPackage):
     timestamp: int
     value: Decimal
 
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Analog input measurement: {self.value} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class AnalogOut(DataPackage):
     """
     The analog output voltage in versions with analog output port.
@@ -947,6 +962,11 @@ class AnalogOut(DataPackage):
 
     timestamp: int
     value: Decimal
+
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
 
     def __str__(self):
         return f"Analog output measurement: {self.value} V | timestamp {self.timestamp} | wavemeter {self.product_id}."
@@ -1025,7 +1045,7 @@ class PID_dt(PID):
         super().__init__(product_id=version, timestamp=int_val, value=Decimal(double_val), parameter="dt")
 
 
-@dataclass
+@dataclass(init=False)
 class ExternalInput(DataPackage):
     """
     External user input transferred to the wavemeter (64 possible). Meant to control wavemeter via a client.
@@ -1045,11 +1065,16 @@ class ExternalInput(DataPackage):
     timestamp: int
     value: Decimal
 
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"External input measurement: {self.value} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class DeviationSensitivityFactor(DataPackage):
     """
     Sensitivity prefactor in Laser and PID versions.
@@ -1069,6 +1094,11 @@ class DeviationSensitivityFactor(DataPackage):
     timestamp: int
     value: Decimal
 
+    def __init__(self, version, int_val, double_val, *_args, **_kwargs):
+        self.timestamp = int_val
+        self.value = Decimal(double_val)
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Deviation sensitivity factor measurement: {self.value} Arb.U. | timestamp {self.timestamp} | wavemeter {self.product_id}."
 
@@ -1078,7 +1108,7 @@ class DeviationSensitivityFactor(DataPackage):
 # Use documentation with caution.
 
 
-@dataclass
+@dataclass(init=False)
 class FastMode(DataPackage):
     """
     In fast mode the pattern is drawn a little bit faster.
@@ -1095,11 +1125,15 @@ class FastMode(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Fast mode active: {bool(self.value)} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class WideMode(DataPackage):
     """
     Wide mode represent the measurement precision mode indicator.
@@ -1116,11 +1150,15 @@ class WideMode(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Wide mode: mode {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class ResultMode(DataPackage):
     """
     Result mode represent the measurement unit.
@@ -1137,11 +1175,15 @@ class ResultMode(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Result mode: unit {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class ExposureMode(DataPackage):
     """
     Exposure mode gives hint about automatic exposure control.
@@ -1158,11 +1200,15 @@ class ExposureMode(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Automatic exposure control active: bool({self.value}) | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class Range(DataPackage):
     """
     Range represent the range in which the wavemeter is operating.
@@ -1179,11 +1225,15 @@ class Range(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Wavemeter range: range {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class PulseMode(DataPackage):
     """
     Pulse mode represent the pulse mode setting.
@@ -1201,11 +1251,15 @@ class PulseMode(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Pulse mode: mode {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class DisplayMode(DataPackage):
     """
     Represents the display mode settings.
@@ -1222,11 +1276,15 @@ class DisplayMode(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Display mode: mode {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class Reduced(DataPackage):
     """
     Represents the reduction state.
@@ -1243,11 +1301,15 @@ class Reduced(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Reduction state: state {bool(self.value)} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class Link(DataPackage):
     """
     Represents the link state with a COM port.
@@ -1264,11 +1326,15 @@ class Link(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Link state: connected to COM port {bool(self.value)} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class Operation(DataPackage):
     """
     Represent the operation state the wavemeter has.
@@ -1286,11 +1352,15 @@ class Operation(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Operation state: state {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class AnalysisMode(DataPackage):
     """
     Represent the analysis mode state.
@@ -1307,11 +1377,15 @@ class AnalysisMode(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"Analysis mode state: state {bool(self.value)} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class SwitcherMode(DataPackage):
     """
     Represent the switcher mode state.
@@ -1327,6 +1401,10 @@ class SwitcherMode(DataPackage):
     mode = MeasureMode.cmiSwitcherMode
 
     value: int
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
 
     def __str__(self):
         return f"Switcher mode state: state {bool(self.value)} | wavemeter {self.product_id}."
@@ -1356,7 +1434,7 @@ class SwitcherChannel(DataPackage):
         return f"Active switcher channel: channel {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class PIDCourse(DataPackage):
     """
     Represent the current active switcher channel.
@@ -1373,11 +1451,15 @@ class PIDCourse(DataPackage):
 
     value: int
 
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
+
     def __str__(self):
         return f"PID course state: {self.value} | wavemeter {self.product_id}."
 
 
-@dataclass
+@dataclass(init=False)
 class DeviationSensitivityDim(DataPackage):
     """
     Represent the dimension of the .
@@ -1393,6 +1475,10 @@ class DeviationSensitivityDim(DataPackage):
     mode = MeasureMode.cmiDeviationSensitivityDim
 
     value: int
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        self.value = int_val
+        super().__init__(product_id=version)
 
     def __str__(self):
         return f"Deviation sensitivity: dimension {self.value} | wavemeter {self.product_id}."
