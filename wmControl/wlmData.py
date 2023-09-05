@@ -888,7 +888,8 @@ def set_active_wavemeter(dll: ctypes.WinDLL | ctypes.CDLL, serial: int) -> None:
 
 def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType, int, tuple[int, int]]:
     wavemeter_type = dll.GetWLMVersion(0)
-    if wavemeter_type < 0:
+    # All exceptions are negative, so we can easily test against them
+    if wavemeter_type in wavemeter_exceptions:
         raise wavemeter_exceptions[wavemeter_type]
     serial = dll.GetWLMVersion(1)
     software_revision = dll.GetWLMVersion(2)
