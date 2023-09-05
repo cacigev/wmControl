@@ -22,7 +22,7 @@ if sys.platform == "win32":
     else:
         dll_path = "./wmControl/wlmData.dll"
 elif sys.platform == "linux":
-    if config("CONNECTION_TYPE") == "LOCAL":
+    if config("CONNECTION_TYPE", default="REMOTE") == "LOCAL":
         raise ValueError("Cannot connect locally using Linux.")
     dll_path = "./wmControl/libwlmData.so"
 
