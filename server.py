@@ -177,13 +177,13 @@ def create_client_handler(
                     except asyncio.CancelledError:
                         pass
         finally:
-            logging.getLogger(__name__).info("Shutting down client handler.")
+            logging.getLogger(__name__).debug("Shutting down client handler.")
 
-        writer.close()
-        try:
-            await asyncio.wait_for(writer.wait_closed(), timeout=1.0)
-        except TimeoutError:
-            pass
+            writer.close()
+            try:
+                await asyncio.wait_for(writer.wait_closed(), timeout=1.0)
+            except TimeoutError:
+                pass
 
     return client_handler
 
