@@ -38,10 +38,11 @@ async def read_stream(reader: asyncio.StreamReader, job_queue: asyncio.Queue[byt
     requests: janus.AsyncQueue
         Queue receiving requests from stream.
     """
-    while "processing commands":
+    request: bytes
+    async for request in reader:
         # Commands are separated by a newline
-        request = await reader.readline()
         if not request:
+            # The client closed the connection
             break
         logging.getLogger(__name__).debug("Received '%s' from client.", request)
         await job_queue.put(request)
