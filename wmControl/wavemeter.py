@@ -22,7 +22,7 @@ import wmControl.wlmData as wlmData
 from async_event_bus import event_bus
 from wmControl import wlmConst
 from wmControl.data_factory import data_factory
-from wmControl.wlmConst import DataPackage, NoWavemeterAvailable, WavemeterType
+from wmControl.wlmConst import DataPackage, NoWavemeterAvailable, WavemeterException, WavemeterType
 
 
 def callback(product_id: int, mode: int, int_val: int, double_val: float, result: int) -> None:
@@ -101,6 +101,7 @@ class Wavemeter:
 
     _active_id: int | None = None
     _lock: asyncio.Lock | None = None
+    _connected_wavemeters: set[int] = set()
 
     @property
     def product_id(self) -> int:
@@ -133,11 +134,24 @@ class Wavemeter:
         Connect to the wavemeter.
         """
         if Wavemeter._lock is None:
+            # The first wavemeter to connect creates the lock
             Wavemeter._lock = asyncio.Lock()
-            # If the lock has not been created we need to initialise the callback
-            wlmData.dll.Instantiate(
-                wlmConst.cInstNotification, wlmConst.cNotifyInstallCallbackEx, wavemeter_callback_pointer, 0
-            )
+
+        async with Wavemeter._lock:
+            if self.product_id in Wavemeter._connected_wavemeters:
+                raise WavemeterException("Wavemeter already connected.")
+            Wavemeter._connected_wavemeters.add(self.product_id)
+
+            if len(Wavemeter._connected_wavemeters) == 1:
+                # There is only one wavemeter connected and this is us, so the callback is not registered yet.
+                # Do it now.
+                try:
+                    await self.__instantiate(wlmConst.cNotifyInstallCallbackEx, wavemeter_callback_pointer)
+                except Exception:
+                    # If there is *any* error, remove the wavemeter from the list of connected wavemeters
+                    Wavemeter._connected_wavemeters.discard(self.product_id)
+                    # then re-raise the error
+                    raise
 
         self.__threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self.__event_queue = janus.Queue()
@@ -150,10 +164,21 @@ class Wavemeter:
 
     async def disconnect(self) -> None:
         """
-        Calling disconnect() does nothing for now.
+        Removes the wavemeter event callback.
         """
-        wlmData.dll.Instantiate(wlmConst.cInstNotification, wlmConst.cNotifyRemoveCallback, -1, 0)
-        self.__logger.info("Disconnected from Wavemeter %i.", self.product_id)
+        if self.product_id in Wavemeter._connected_wavemeters:
+            try:
+                # Double-checked locking is OK in asyncio, but not for multithreaded applications. See
+                # https://peps.python.org/pep-0583/ , which was withdrawn but highlights the problem.
+                if len(Wavemeter._connected_wavemeters) == 1:
+                    async with Wavemeter._lock:
+                        # Make sure that nobody has connected in the meantime
+                        if len(self._connected_wavemeters) == 1:
+                            await self.__instantiate(wlmConst.cNotifyRemoveCallback, -1)
+            finally:
+                # Always remove the wavemeter, no matter what happened
+                Wavemeter._connected_wavemeters.discard(self.product_id)
+                self.__logger.info("Disconnected from Wavemeter %i.", self.product_id)
 
     async def __wrapper(self, func: Callable, *args: Any) -> Any:
         """
@@ -187,6 +212,12 @@ class Wavemeter:
         event: DataPackage
         async for event in event_bus.subscribe(str(self.product_id)):
             yield event
+
+    async def __instantiate(
+        self, notification_type: int, callback_pointer: Type[wavemeter_callback_pointer] | int
+    ) -> None:
+        """Only call this function when locked."""
+        await self.__wrapper(wlmData.instantiate, notification_type, callback_pointer)
 
     @_lock_wavemeter
     async def set_switch_mode(self, enable: bool) -> None:

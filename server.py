@@ -127,7 +127,7 @@ def create_client_handler(
 
     Returns
     -------
-    Coroutine
+    Callable
         The client_connected_cb callback that can be passed to asyncio.start_server().
     """
 

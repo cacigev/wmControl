@@ -7,7 +7,7 @@ import ctypes
 import os
 from decimal import Decimal
 
-from wmControl.wlmConst import WavemeterType, wavemeter_exceptions
+from wmControl.wlmConst import WavemeterType, cInstNotification, wavemeter_exceptions
 
 dll: ctypes.WinDLL | ctypes.CDLL | None = None
 
@@ -833,6 +833,10 @@ def LoadDLL(path):
     dll.SetScale.restype = ctypes.c_int32
 
     return dll
+
+
+def instantiate(dll: ctypes.WinDLL | ctypes.CDLL, notification_type: int, callback_pointer: int) -> None:
+    dll.Instantiate(cInstNotification, notification_type, callback_pointer, 0)
 
 
 def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
