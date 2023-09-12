@@ -179,12 +179,20 @@ def create_client_handler(
                         pass
         finally:
             logging.getLogger(__name__).debug("Shutting down client handler.")
-
-            writer.close()
+            # Cancel all remaining tasks
+            for pending_task in pending_tasks:
+                pending_task.cancel()
             try:
-                await asyncio.wait_for(writer.wait_closed(), timeout=1.0)
-            except TimeoutError:
+                await asyncio.gather(*pending_tasks)
+            except asyncio.CancelledError:
                 pass
+            finally:
+                await writer.drain()
+                writer.close()
+                try:
+                    await asyncio.wait_for(writer.wait_closed(), timeout=1.0)
+                except TimeoutError:
+                    pass
 
     return client_handler
 
