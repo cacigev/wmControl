@@ -17,3 +17,17 @@ conda install pip
 pip install -r requirements.txt
 pre-commit install
 ```
+
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](../../tags).
+
+## Authors
+
+* **Simon Schultheis** - *Initial work* - [cacigev](https://github.com/cacigev)
+* Patrick Baus - *Initial work* - [PatrickBaus](https://github.com/PatrickBaus)
+
+## License
+
+
+This project is licensed under the GPL v3 license - see the [LICENSE](LICENSE) file for details
