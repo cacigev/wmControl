@@ -25,7 +25,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## Authors
 
 * **Simon Schultheis** - *Initial work* - [cacigev](https://github.com/cacigev)
-* Patrick Baus - *Initial work* - [PatrickBaus](https://github.com/PatrickBaus)
+* Patrick Baus - [PatrickBaus](https://github.com/PatrickBaus)
 
 ## License
 
