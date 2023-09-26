@@ -214,6 +214,8 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
     """
     assert isinstance(port, int) and port > 0
     async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
+        await wavemeter.open_window(product_id)  # Opens WM-app-window if not opened yet else puts it in the foreground.
+        # TODO: Set modes
         server = await asyncio.start_server(
             client_connected_cb=create_client_handler(wavemeter), host=interface, port=port
         )

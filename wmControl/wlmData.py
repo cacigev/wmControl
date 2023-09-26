@@ -8,7 +8,13 @@ import logging
 import os
 from decimal import Decimal
 
-from wmControl.wlmConst import WavemeterException, WavemeterType, cInstNotification, wavemeter_exceptions
+from wmControl.wlmConst import (
+    WavemeterException,
+    WavemeterType,
+    cInstNotification,
+    wavemeter_exceptions,
+    cCtrlWLMShow,
+)
 
 dll: ctypes.WinDLL | ctypes.CDLL | None = None
 
@@ -934,3 +940,7 @@ def get_temperature(dll: ctypes.WinDLL | ctypes.CDLL) -> Decimal:
 
 def get_calibration_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, pre_calibration: bool) -> Decimal:
     return Decimal(dll.GetCalWavelength(int(not pre_calibration), 0.0))
+
+
+def open_window(dll: ctypes.WinDLL | ctypes.CDLL, product_id: int):
+    dll.ControlWLM(cCtrlWLMShow, 0.0, product_id)
