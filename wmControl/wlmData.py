@@ -847,6 +847,20 @@ def instantiate(dll: ctypes.WinDLL | ctypes.CDLL, notification_type: int, callba
     dll.Instantiate(cInstNotification, notification_type, callback_pointer, 0)
 
 
+def _setter_error_handling(name: str, result: int, value: bool | int) -> None:
+    """Common error handler for setter functions."""
+    striped_name = name.rstrip("set_").replace("_", "")
+    if result <= 0:
+        try:
+            raise wavemeter_exceptions[result]("Error setting %s to %s", (striped_name, str(value)))
+        except KeyError:
+            logging.getLogger(__name__).error(
+                "Invalid return type received while calling '%s': %i",
+                (striped_name, result)
+            )
+            raise WavemeterException("Error setting %s to %s", (striped_name, str(value)))
+
+
 def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.GetWavelengthNum(channel + 1, 0.0)
@@ -879,25 +893,13 @@ def get_switch_mode(dll: ctypes.WinDLL | ctypes.CDLL) -> bool:
 
 def set_switch_mode(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
     result = wavemeter_exceptions.get(dll.SetSwitcherMode(int(enable)))
-    if result <= 0:
-        try:
-            raise wavemeter_exceptions[result]("Error setting switch mode to %s", enable)
-        except KeyError:
-            logging.getLogger(__name__).error(
-                "Invalid return type received while calling 'set_switch_mode': %i", result
-            )
-            raise WavemeterException("Error setting switch mode to %s", enable)
+    _setter_error_handling(set_switch_mode.__name__, result, enable)
 
 
 def set_channel(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> None:
     assert 0 <= channel <= 8  # TODO: Check if 8 channels is the maximum
     result = dll.SetSwitcherChannel(channel + 1)
-    if result <= 0:
-        try:
-            raise wavemeter_exceptions[result]("Error setting channel to %i", channel)
-        except KeyError:
-            logging.getLogger(__name__).error("Invalid return type received while calling 'set_channel': %i", result)
-            raise WavemeterException("Error setting channel to %i", channel)
+    _setter_error_handling(set_channel.__name__, result, channel)
 
 
 def get_channel(dll: ctypes.WinDLL | ctypes.CDLL) -> int:
@@ -954,13 +956,6 @@ def open_window(dll: ctypes.WinDLL | ctypes.CDLL, product_id: int):
             pass
 
 
-def set_auto_calibration(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
+def set_auto_calibration_mode(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
     result = wavemeter_exceptions.get(dll.SetAutoCal(int(enable)))
-    if result <= 0:
-        try:
-            raise wavemeter_exceptions[result]("Error setting auto calibration mode to %s", enable)
-        except KeyError:
-            logging.getLogger(__name__).error(
-                "Invalid return type received while calling 'set_auto_calibration': %i", result
-            )
-            raise WavemeterException("Error setting auto calibration mode to %s", enable)
+    _setter_error_handling(set_auto_calibration_mode.__name__, result, enable)

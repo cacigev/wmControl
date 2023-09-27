@@ -281,4 +281,4 @@ class Wavemeter:
 
     @_lock_wavemeter
     async def set_auto_calibration(self, enable: bool) -> None:
-        await self.__wrapper(wlmData.set_auto_calibration, enable)
+        await self.__wrapper(wlmData.set_auto_calibration_mode, enable)
