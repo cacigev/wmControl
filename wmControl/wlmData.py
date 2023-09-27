@@ -14,6 +14,7 @@ from wmControl.wlmConst import (
     cInstNotification,
     wavemeter_exceptions,
     cCtrlWLMShow,
+    ResERR_WlmMissing,
 )
 
 dll: ctypes.WinDLL | ctypes.CDLL | None = None
@@ -944,3 +945,22 @@ def get_calibration_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, pre_calibration
 
 def open_window(dll: ctypes.WinDLL | ctypes.CDLL, product_id: int):
     dll.ControlWLM(cCtrlWLMShow, 0.0, product_id)
+    while "Window is opening.":
+        try:
+            set_switch_mode(dll, True)
+            set_switch_mode(dll, False)
+            break
+        except ResERR_WlmMissing:
+            pass
+
+
+def set_auto_calibration(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
+    result = wavemeter_exceptions.get(dll.SetAutoCal(int(enable)))
+    if result <= 0:
+        try:
+            raise wavemeter_exceptions[result]("Error setting auto calibration mode to %s", enable)
+        except KeyError:
+            logging.getLogger(__name__).error(
+                "Invalid return type received while calling 'set_auto_calibration': %i", result
+            )
+            raise WavemeterException("Error setting auto calibration mode to %s", enable)

@@ -252,25 +252,29 @@ class Wavemeter:
         return await self.__wrapper(wlmData.get_wavemeter_info)
 
     @_lock_wavemeter
-    async def get_wavemeter_count(self):
+    async def get_wavemeter_count(self) -> int:
         return await self.__wrapper(wlmData.get_wavemeter_count)
 
-    async def set_active_wavemeter(self, product_id: int):
+    async def set_active_wavemeter(self, product_id: int) -> None:
         async with Wavemeter._lock:
             await self._set_active_wavemeter(product_id)
 
-    async def _set_active_wavemeter(self, product_id: int):
+    async def _set_active_wavemeter(self, product_id: int) -> None:
         await self.__wrapper(wlmData.set_active_wavemeter, product_id)
         Wavemeter._active_id = product_id
 
     @_lock_wavemeter
-    async def get_temperature(self):
+    async def get_temperature(self) -> Decimal:
         return await self.__wrapper(wlmData.get_temperature)
 
     @_lock_wavemeter
-    async def get_calibration_wavelength(self, pre_calibration: bool = False):
+    async def get_calibration_wavelength(self, pre_calibration: bool = False) -> Decimal:
         return await self.__wrapper(wlmData.get_calibration_wavelength, pre_calibration)
 
     @_lock_wavemeter
-    async def open_window(self, product_id: int):
-        self.__wrapper(wlmData.open_window,product_id)
+    async def open_window(self, product_id: int) -> None:
+        await self.__wrapper(wlmData.open_window,product_id)
+
+    @_lock_wavemeter
+    async def set_auto_calibration(self, enable: bool) -> None:
+        await self.__wrapper(wlmData.set_auto_calibration, enable)
