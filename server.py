@@ -197,7 +197,12 @@ def create_client_handler(
     return client_handler
 
 
-async def create_wm_server(product_id: int, interface: str | Sequence[str] | None, port: int) -> None:
+async def create_wm_server(
+        product_id: int,
+        interface: str | Sequence[str] | None,
+        port: int,
+        states: list[str]
+) -> None:
     """
     Create a wavemeter SCPI server. The server listens at the given port and passes the commands to the wavemeter with
     the given product_id.
@@ -216,13 +221,9 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
     async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
         await wavemeter.open_window(product_id)  # Opens WM-app-window if not opened yet else puts it in the foreground
 
-        env_states = ["activate switch mode", "activate auto calibration"]
-        env_states_dict = {
-            "activate switch mode": wavemeter.set_switch_mode,
-            "activate auto calibration": wavemeter.set_auto_calibration,
-        }
-        for setter in env_states:
-            env_states_dict[setter](True)
+        # states = ["activate switch mode", "activate auto calibration"]
+        for setter in states:
+            wavemeter.states[setter](True)
 
         server = await asyncio.start_server(
             client_connected_cb=create_client_handler(wavemeter), host=interface, port=port
@@ -237,14 +238,14 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
             await server.serve_forever()
 
 
-async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[IPvAnyInterface] | None, int]]):
+async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[IPvAnyInterface] | None, int, list]]):
     server_list: set[asyncio.Task] = set()
 
     logging.getLogger(__name__).warning("#################################################")
     logging.getLogger(__name__).warning("Starting SCPI daemon v%s...", __version__)
     logging.getLogger(__name__).warning("#################################################")
 
-    for wavemeter_id, interface, port in wavemeter_config:
+    for wavemeter_id, interface, port, states in wavemeter_config:
         if interface is not None:
             try:
                 interface_str = [str(iface.ip for iface in interface)]
@@ -254,7 +255,7 @@ async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[
         else:
             interface_str = None
 
-        server = asyncio.create_task(create_wm_server(wavemeter_id, interface_str, port))
+        server = asyncio.create_task(create_wm_server(wavemeter_id, interface_str, port, states))
         server_list.add(server)
 
     await asyncio.gather(*server_list)

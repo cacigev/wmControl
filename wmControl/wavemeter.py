@@ -115,6 +115,10 @@ class Wavemeter:
         self.__threadpool: concurrent.futures.ThreadPoolExecutor | None = None
         self.__event_queue: janus.Queue[DataPackage] | None = None
         self.__callback: ctypes.POINTER | None = None
+        self.states = {
+            "activate switch mode": self.set_switch_mode,
+            "activate auto calibration": self.set_auto_calibration,
+        }
 
         # Load dll path
         if wlmData.dll is None:

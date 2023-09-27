@@ -23,7 +23,7 @@ def parse_wavemeter_config(
     A tuple of tuples of int, IPvAnyInterface, int
         A validated tuple of wavemeter configs
     """
-    ta = TypeAdapter(list[tuple[int, IPvAnyInterface | tuple[IPvAnyInterface] | None, int],])
+    ta = TypeAdapter(list[tuple[int, IPvAnyInterface | tuple[IPvAnyInterface] | None, int, list[str]],])
     return ta.validate_json(wavemeter_configs)
 
 
