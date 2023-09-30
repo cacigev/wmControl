@@ -8,14 +8,7 @@ import logging
 import os
 from decimal import Decimal
 
-from wmControl.wlmConst import (
-    WavemeterException,
-    WavemeterType,
-    cInstNotification,
-    wavemeter_exceptions,
-    cCtrlWLMShow,
-    ResERR_WlmMissing,
-)
+from wmControl.wlmConst import WavemeterException, WavemeterType, cCtrlWLMShow, cInstNotification, wavemeter_exceptions
 
 dll: ctypes.WinDLL | ctypes.CDLL | None = None
 
@@ -855,8 +848,7 @@ def _setter_error_handling(name: str, result: int, value: bool | int) -> None:
             raise wavemeter_exceptions[result]("Error setting %s to %s", (striped_name, str(value)))
         except KeyError:
             logging.getLogger(__name__).error(
-                "Invalid return type received while calling '%s': %i",
-                (striped_name, result)
+                "Invalid return type received while calling '%s': %i", (striped_name, result)
             )
             raise WavemeterException("Error setting %s to %s", (striped_name, str(value)))
 
@@ -946,14 +938,7 @@ def get_calibration_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, pre_calibration
 
 
 def open_window(dll: ctypes.WinDLL | ctypes.CDLL, product_id: int):
-    dll.ControlWLM(cCtrlWLMShow, 0.0, product_id)
-    while "Window is opening.":
-        try:
-            set_switch_mode(dll, True)
-            set_switch_mode(dll, False)
-            break
-        except ResERR_WlmMissing:
-            pass
+    dll.ControlWLM(cCtrlWLMShow, 0, product_id)
 
 
 def set_auto_calibration_mode(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
