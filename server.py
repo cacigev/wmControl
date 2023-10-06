@@ -164,13 +164,13 @@ def create_client_handler(
                 done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
                 for completed_task in done:
                     try:
-                        exc = completed_task.exception()  # Raises a CancelledError if the task has been cancelled
+                        task_exc = completed_task.exception()  # Raises a CancelledError if the task has been cancelled
                     except asyncio.exceptions.CancelledError:
                         # If the task was canceled, there is no further action needed.
                         continue
-                    if exc is not None:
+                    if task_exc is not None:
                         # An exception was raised. Terminate now.
-                        logging.getLogger(__name__).error("Error while serving client.", exc_info=exc)
+                        logging.getLogger(__name__).error("Error while serving client.", exc_info=task_exc)
                     for pending_task in pending_tasks:
                         pending_task.cancel()
                     try:
@@ -187,11 +187,12 @@ def create_client_handler(
             except asyncio.CancelledError:
                 pass
             finally:
-                await writer.drain()
-                writer.close()
                 try:
+                    await writer.drain()
+                    writer.close()
                     await asyncio.wait_for(writer.wait_closed(), timeout=1.0)
-                except TimeoutError:
+                except OSError:
+                    # Catches TimeoutErrors (from wait_for) and ConnectionErrors (from writer.drain())
                     pass
 
     return client_handler
@@ -264,8 +265,8 @@ try:
     wavemeters = parse_wavemeter_config(config("WAVEMETERS"))
 except UndefinedValueError:
     logging.getLogger(__name__).error("No wavemeters defined. Check the 'WAVEMETERS' environment variable.")
-except ValidationError as exc:
-    logging.getLogger(__name__).error(f"Invalid wavemeter configuration: {exc}")
+except ValidationError as validation_exc:
+    logging.getLogger(__name__).error(f"Invalid wavemeter configuration: {validation_exc}")
 else:
     try:
         asyncio.run(main(wavemeters))
