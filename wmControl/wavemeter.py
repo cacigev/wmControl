@@ -272,8 +272,8 @@ class Wavemeter:
         return await self.__wrapper(wlmData.get_calibration_wavelength, pre_calibration)
 
     @_lock_wavemeter
-    async def open_window(self, product_id: int) -> None:
-        await self.__wrapper(wlmData.open_window, product_id)
+    async def open_window(self, product_id: int, delay) -> None:
+        await self.__wrapper(wlmData.open_window, product_id, delay)
 
     @_lock_wavemeter
     async def set_auto_calibration(self, enable: bool) -> None:

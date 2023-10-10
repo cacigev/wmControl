@@ -8,7 +8,16 @@ import logging
 import os
 from decimal import Decimal
 
-from wmControl.wlmConst import WavemeterException, WavemeterType, cCtrlWLMShow, cInstNotification, wavemeter_exceptions
+from wmControl.wlmConst import (
+    WavemeterException,
+    WavemeterType,
+    cCtrlWLMShow,
+    cInstNotification,
+    wavemeter_exceptions,
+    cInstCheckForWLM,
+    cCtrlWLMWait,
+    ControlFlags,
+)
 
 dll: ctypes.WinDLL | ctypes.CDLL | None = None
 
@@ -937,8 +946,17 @@ def get_calibration_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, pre_calibration
     return Decimal(dll.GetCalWavelength(int(not pre_calibration), 0.0))
 
 
-def open_window(dll: ctypes.WinDLL | ctypes.CDLL, product_id: int):
-    dll.ControlWLM(cCtrlWLMShow, 0, product_id)
+def open_window(dll: ctypes.WinDLL | ctypes.CDLL, product_id: int, delay: int=10) -> None:
+    flags = dll.ControlWLMEx(cCtrlWLMShow + cCtrlWLMWait, 0, product_id, delay, 1)
+    if flags == ControlFlags.flServerStarted:
+        logging.getLogger(__name__).info("Wavemeter GUI opened normally.")
+    else:
+        flag_names = [flag.name for flag in ControlFlags if flag & flags == flag]
+        if ControlFlags.flServerStarted in flag_names:
+            logging.getLogger(__name__).warning("Wavemeter GUI opened with errors.")
+            flag_names.pop()
+
+        raise WavemeterException("Error(s) while opening the wavemeter GUI: %s" % ",".join(flag_names))
 
 
 def set_auto_calibration_mode(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:
