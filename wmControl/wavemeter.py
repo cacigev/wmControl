@@ -162,6 +162,11 @@ class Wavemeter:
             # There is no way to tell if the wavemeter is actually available, so we will now try to open the
             # wavemeter GUI application and try again
             await self.open_window(self.product_id)
+            # The open_window function return before the wavemeter application is able to respond, so we will wait
+            # for the first event which signals that the application is ready to send and receive data
+            async for _ in self.read_events():
+                break
+
             await self.get_application_index()
 
         self.__logger.info("Connected to wavemeter %i.", self.product_id)
