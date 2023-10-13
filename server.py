@@ -14,6 +14,7 @@ from _version import __version__
 from config_parser import parse_log_level, parse_wavemeter_config
 from scpi_protocol import ScpiException, UnexpectedNumberOfParameterException, create_scpi_protocol
 from wmControl.wavemeter import Wavemeter
+from wmControl.wlmConst import NoWavemeterAvailable
 
 dll_path = None
 if sys.platform == "win32":
@@ -215,10 +216,6 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
     """
     assert isinstance(port, int) and port > 0
     async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
-        try:
-            await wavemeter.open_window(product_id, delay=10)
-        except WavemeterException:
-            pass
         server = await asyncio.start_server(
             client_connected_cb=create_client_handler(wavemeter), host=interface, port=port
         )

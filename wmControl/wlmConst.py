@@ -3,7 +3,7 @@
 #
 from dataclasses import dataclass
 from decimal import Decimal
-from enum import Enum, IntEnum
+from enum import Enum, Flag, IntEnum
 
 # Instantiating Constants for 'RFC' parameter
 cInstCheckForWLM = -1
@@ -615,8 +615,9 @@ ErrDistance = -1000000000
 ErrDistanceNotAvailable = ErrDistance + ErrNotAvailable
 ErrDistanceWlmMissing = ErrDistance + ErrWlmMissing
 
+
 # Return flags of ControlWLMEx in combination with Show or Hide, Wait and Res = 1
-class ControlFlags(IntEnum):
+class ControlFlags(Flag):
     flServerStarted = 0x00000001
     flErrDeviceNotFound = 0x00000002
     flErrDriverError = 0x00000004
@@ -642,6 +643,7 @@ class ControlFlags(IntEnum):
     flErrFileVersionOld = 0x00800000
     flDeviceStampNewer = 0x01000000
     flFileStampNewer = 0x02000000
+
 
 # Return file info flags of SetOperationFile
 flFileInfoDoesntExist = 0x0000

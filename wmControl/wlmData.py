@@ -9,14 +9,14 @@ import os
 from decimal import Decimal
 
 from wmControl.wlmConst import (
+    ControlFlags,
     WavemeterException,
     WavemeterType,
     cCtrlWLMShow,
+    cCtrlWLMWait,
+    cInstCheckForWLM,
     cInstNotification,
     wavemeter_exceptions,
-    cInstCheckForWLM,
-    cCtrlWLMWait,
-    ControlFlags,
 )
 
 dll: ctypes.WinDLL | ctypes.CDLL | None = None
@@ -845,7 +845,7 @@ def LoadDLL(path):
     return dll
 
 
-def instantiate(dll: ctypes.WinDLL | ctypes.CDLL, notification_type: int, callback_pointer: int) -> None:
+def register_callback(dll: ctypes.WinDLL | ctypes.CDLL, notification_type: int, callback_pointer: int) -> None:
     dll.Instantiate(cInstNotification, notification_type, callback_pointer, 0)
 
 
@@ -859,7 +859,7 @@ def _setter_error_handling(name: str, result: int, value: bool | int) -> None:
             logging.getLogger(__name__).error(
                 "Invalid return type received while calling '%s': %i", (striped_name, result)
             )
-            raise WavemeterException("Error setting %s to %s", (striped_name, str(value)))
+            raise WavemeterException("Error setting %s to %s", (striped_name, str(value))) from None
 
 
 def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
@@ -870,7 +870,7 @@ def get_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
             raise wavemeter_exceptions[result]("Error reading wavelength on channel %i", channel)
         except KeyError:
             logging.getLogger(__name__).error("Invalid return type received while calling 'get_wavelength': %i", result)
-            raise WavemeterException("Error reading wavelength on channel %i", channel)
+            raise WavemeterException("Error reading wavelength on channel %i", channel) from None
 
     return Decimal(result) * Decimal("1e-9")  # Result in m
 
@@ -883,7 +883,7 @@ def get_frequency(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> Decimal:
             raise wavemeter_exceptions[result]("Error reading frequency on channel %i", channel)
         except KeyError:
             logging.getLogger(__name__).error("Invalid return type received while calling 'get_frequency': %i", result)
-            raise WavemeterException("Error reading frequency on channel %i", channel)
+            raise WavemeterException("Error reading frequency on channel %i", channel) from None
 
     return Decimal(result) * Decimal("1e12")  # Result in Hz
 
@@ -915,8 +915,29 @@ def get_wavemeter_count(dll: ctypes.WinDLL | ctypes.CDLL):
     return dll.GetWLMCount(0)
 
 
+def get_wavemeter_index(dll: ctypes.WinDLL | ctypes.CDLL, serial: int) -> int:
+    result = dll.GetWLMIndex(serial)
+    if result < 0:
+        try:
+            raise wavemeter_exceptions[result]("Error searching a wavemeter with product id %i", serial)
+        except KeyError:
+            logging.getLogger(__name__).error(
+                "Invalid return type received while calling 'get_wavemeter_index': %i", result
+            )
+            raise wavemeter_exceptions[result]("Error searching a wavemeter with product id %i", serial) from None
+    return result
+
+
 def set_active_wavemeter(dll: ctypes.WinDLL | ctypes.CDLL, serial: int) -> None:
-    dll.PresetWLMIndex(serial)
+    wavemeter_index = dll.PresetWLMIndex(serial)
+    if wavemeter_index < 0:  # A negative return value denotes an error since the index is zero-based
+        try:
+            raise wavemeter_exceptions[wavemeter_index]("Error switching to wavemeter %i", serial)
+        except KeyError:
+            logging.getLogger(__name__).error(
+                "Invalid return type received while calling 'set_active_wavemeter': %i", wavemeter_index
+            )
+            raise wavemeter_exceptions[wavemeter_index]("Error switching to wavemeter %i", serial) from None
 
 
 def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType, int, tuple[int, int]]:
@@ -929,7 +950,7 @@ def get_wavemeter_info(dll: ctypes.WinDLL | ctypes.CDLL) -> tuple[WavemeterType,
             logging.getLogger(__name__).error(
                 "Invalid return type received while calling 'get_wavemeter_info': %i", wavemeter_type
             )
-            raise WavemeterException("Error reading wavemeter info.")
+            raise WavemeterException("Error reading wavemeter info.") from None
 
     serial = dll.GetWLMVersion(1)
     software_revision = dll.GetWLMVersion(2)
@@ -946,17 +967,11 @@ def get_calibration_wavelength(dll: ctypes.WinDLL | ctypes.CDLL, pre_calibration
     return Decimal(dll.GetCalWavelength(int(not pre_calibration), 0.0))
 
 
-def open_window(dll: ctypes.WinDLL | ctypes.CDLL, product_id: int, delay: int=10) -> None:
-    flags = dll.ControlWLMEx(cCtrlWLMShow + cCtrlWLMWait, 0, product_id, delay, 1)
-    if flags == ControlFlags.flServerStarted:
-        logging.getLogger(__name__).info("Wavemeter GUI opened normally.")
-    else:
-        flag_names = [flag.name for flag in ControlFlags if flag & flags == flag]
-        if ControlFlags.flServerStarted in flag_names:
-            logging.getLogger(__name__).warning("Wavemeter GUI opened with errors.")
-            flag_names.pop()
-
-        raise WavemeterException("Error(s) while opening the wavemeter GUI: %s" % ",".join(flag_names))
+def open_window(dll: ctypes.WinDLL | ctypes.CDLL, application_path: str | None, product_id: int, timeout: int) -> None:
+    # FIXME: Allow any file name for the GUI application. The default value is currently used (second parameter is 0).
+    flags = ControlFlags(dll.ControlWLMEx(cCtrlWLMShow | cCtrlWLMWait, application_path or 0, product_id, timeout, 1))
+    if ControlFlags.flServerStarted not in flags:
+        raise WavemeterException(f"Error while opening the wavemeter GUI: {flags}")
 
 
 def set_auto_calibration_mode(dll: ctypes.WinDLL | ctypes.CDLL, enable: bool) -> None:

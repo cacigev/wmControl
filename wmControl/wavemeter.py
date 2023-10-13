@@ -146,7 +146,7 @@ class Wavemeter:
                 # There is only one wavemeter connected and this is us, so the callback is not registered yet.
                 # Do it now.
                 try:
-                    await self.__instantiate(wlmConst.cNotifyInstallCallbackEx, wavemeter_callback_pointer)
+                    await self.__register_callback(wlmConst.cNotifyInstallCallbackEx, wavemeter_callback_pointer)
                 except Exception:
                     # If there is *any* error, remove the wavemeter from the list of connected wavemeters
                     Wavemeter._connected_wavemeters.discard(self.product_id)
@@ -156,9 +156,13 @@ class Wavemeter:
         self.__threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         self.__event_queue = janus.Queue()
 
-        _, product_id, _ = await self.get_wavemeter_info()
-        if product_id != self.product_id:
-            raise NoWavemeterAvailable("The wavemeter with id %i was not found.", self.product_id)
+        try:
+            await self.get_application_index()
+        except NoWavemeterAvailable:
+            # There is no way to tell if the wavemeter is actually available, so we will now try to open the
+            # wavemeter GUI application and try again
+            await self.open_window(self.product_id)
+            await self.get_application_index()
 
         self.__logger.info("Connected to wavemeter %i.", self.product_id)
 
@@ -174,7 +178,7 @@ class Wavemeter:
                     async with Wavemeter._lock:
                         # Make sure that nobody has connected in the meantime
                         if len(self._connected_wavemeters) == 1:
-                            await self.__instantiate(wlmConst.cNotifyRemoveCallback, -1)
+                            await self.__register_callback(wlmConst.cNotifyRemoveCallback, -1)
             finally:
                 # Always remove the wavemeter, no matter what happened
                 Wavemeter._connected_wavemeters.discard(self.product_id)
@@ -213,11 +217,11 @@ class Wavemeter:
         async for event in event_bus.subscribe(str(self.product_id)):
             yield event
 
-    async def __instantiate(
+    async def __register_callback(
         self, notification_type: int, callback_pointer: Type[wavemeter_callback_pointer] | int
     ) -> None:
         """Only call this function when locked."""
-        await self.__wrapper(wlmData.instantiate, notification_type, callback_pointer)
+        await self.__wrapper(wlmData.register_callback, notification_type, callback_pointer)
 
     @_lock_wavemeter
     async def set_switch_mode(self, enable: bool) -> None:
@@ -251,9 +255,24 @@ class Wavemeter:
     async def get_wavemeter_info(self) -> tuple[WavemeterType, int, tuple[int, int]]:
         return await self.__wrapper(wlmData.get_wavemeter_info)
 
+    @staticmethod
+    def get_wavemeter_count():
+        return wlmData.get_wavemeter_count(wlmData.dll)
+
     @_lock_wavemeter
-    async def get_wavemeter_count(self):
-        return await self.__wrapper(wlmData.get_wavemeter_count)
+    async def get_application_index(self) -> int:
+        """
+        Return the GUI application index of the wavemeter. Warning this function will return wrong values if the
+        wavemeter application is not running!
+
+        Parameters
+        ----------
+        Returns
+        -------
+        int
+            The GUI application index of the wavemeter
+        """
+        return wlmData.get_wavemeter_index(wlmData.dll, self.product_id)
 
     async def set_active_wavemeter(self, product_id: int):
         async with Wavemeter._lock:
@@ -272,8 +291,18 @@ class Wavemeter:
         return await self.__wrapper(wlmData.get_calibration_wavelength, pre_calibration)
 
     @_lock_wavemeter
-    async def open_window(self, product_id: int, delay) -> None:
-        await self.__wrapper(wlmData.open_window, product_id, delay)
+    async def open_window(self, product_id: int) -> None:
+        """
+        Open the GUI window required for the wavemeter DLL access. This function will wait indefinitely for the window
+        to open.
+
+        Parameters
+        ----------
+        product_id: int
+            The wavemeter product id/version/serial number.
+        """
+        # Set the timeout to -1 (infinity), because the timeout should be handled via asyncio
+        await self.__wrapper(wlmData.open_window, None, product_id, -1)
 
     @_lock_wavemeter
     async def set_auto_calibration(self, enable: bool) -> None:
