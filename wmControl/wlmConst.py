@@ -2474,6 +2474,34 @@ class Power8(Power):
         super().__init__(product_id=version, value=Decimal(int_val), channel=8)
 
 
+@dataclass
+class WavemeterServerStatus(DataPackage):
+    value: int
+
+
+@dataclass(init=False)
+class WavemeterServerShutdown(WavemeterServerStatus):
+    mode = MeasureMode.cmiDLLDetach
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=int_val)
+
+
+@dataclass(init=False)
+class WavemeterServerStart(WavemeterServerStatus):
+    mode = MeasureMode.cmiDLLAttach
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=int_val)
+
+
+class WavemeterServerInitialized(WavemeterServerStatus):
+    mode = MeasureMode.cmiServerInitialized
+
+    def __init__(self, version, int_val, *_args, **_kwargs):
+        super().__init__(product_id=version, value=int_val)
+
+
 class WavemeterException(Exception):
     pass
 

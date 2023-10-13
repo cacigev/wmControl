@@ -22,7 +22,13 @@ import wmControl.wlmData as wlmData
 from async_event_bus import event_bus
 from wmControl import wlmConst
 from wmControl.data_factory import data_factory
-from wmControl.wlmConst import DataPackage, NoWavemeterAvailable, WavemeterException, WavemeterType
+from wmControl.wlmConst import (
+    DataPackage,
+    NoWavemeterAvailable,
+    WavemeterException,
+    WavemeterServerStart,
+    WavemeterType,
+)
 
 
 def callback(product_id: int, mode: int, int_val: int, double_val: float, result: int) -> None:
@@ -162,10 +168,11 @@ class Wavemeter:
             # There is no way to tell if the wavemeter is actually available, so we will now try to open the
             # wavemeter GUI application and try again
             await self.open_window(self.product_id)
-            # The open_window function return before the wavemeter application is able to respond, so we will wait
+            # The open_window function returns before the wavemeter application is able to respond, so we will wait
             # for the first event which signals that the application is ready to send and receive data
-            async for _ in self.read_events():
-                break
+            async for event in self.read_events():
+                if isinstance(event, WavemeterServerStart):
+                    break
 
             await self.get_application_index()
 

@@ -231,6 +231,7 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
 
 async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[IPvAnyInterface] | None, int]]):
     server_list: set[asyncio.Task] = set()
+    wavemeters_configured: set[int] = set()
 
     logging.getLogger(__name__).warning("#################################################")
     logging.getLogger(__name__).warning("Starting SCPI daemon v%s...", __version__)
@@ -248,7 +249,9 @@ async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[
 
         server = asyncio.create_task(create_wm_server(wavemeter_id, interface_str, port))
         server_list.add(server)
+        wavemeters_configured.add(wavemeter_id)
 
+    logging.getLogger(__name__).info("Wavemeter configurations found for %s...", wavemeters_configured)
     await asyncio.gather(*server_list)
 
 
