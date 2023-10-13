@@ -14,7 +14,7 @@ from _version import __version__
 from config_parser import parse_log_level, parse_wavemeter_config
 from scpi_protocol import ScpiException, UnexpectedNumberOfParameterException, create_scpi_protocol
 from wmControl.wavemeter import Wavemeter
-from wmControl.wlmConst import NoWavemeterAvailable
+from wmControl.wlmConst import WavemeterServerInitialized, WavemeterServerShutdown
 
 dll_path = None
 if sys.platform == "win32":
@@ -199,6 +199,14 @@ def create_client_handler(
     return client_handler
 
 
+async def monitor_wavemeter(wavemeter: Wavemeter):
+    async for event in wavemeter.read_events():
+        if isinstance(event, WavemeterServerShutdown):
+            break
+        if isinstance(event, WavemeterServerInitialized) and event.value == 0:
+            break
+
+
 async def create_wm_server(product_id: int, interface: str | Sequence[str] | None, port: int) -> None:
     """
     Create a wavemeter SCPI server. The server listens at the given port and passes the commands to the wavemeter with
@@ -215,18 +223,39 @@ async def create_wm_server(product_id: int, interface: str | Sequence[str] | Non
         The port number to listen at.
     """
     assert isinstance(port, int) and port > 0
-    async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
-        server = await asyncio.start_server(
-            client_connected_cb=create_client_handler(wavemeter), host=interface, port=port
-        )
 
-        async with server:
-            logging.getLogger(__name__).info(
-                "Serving wavemeter %i on %s",
-                wavemeter.product_id,
-                ", ".join(f"{sock.getsockname()[0]}:{sock.getsockname()[1]}" for sock in server.sockets),
+    while "running the server":
+        pending_tasks: set[asyncio.Task] = set()
+        async with Wavemeter(product_id, dll_path=dll_path) as wavemeter:  # Activate wavemeter.
+            server = await asyncio.start_server(
+                client_connected_cb=create_client_handler(wavemeter), host=interface, port=port
             )
-            await server.serve_forever()
+
+            monitor_task = asyncio.create_task(monitor_wavemeter(wavemeter))
+            pending_tasks.add(monitor_task)
+
+            async with server:
+                logging.getLogger(__name__).info(
+                    "Serving wavemeter %i on %s",
+                    wavemeter.product_id,
+                    ", ".join(f"{sock.getsockname()[0]}:{sock.getsockname()[1]}" for sock in server.sockets),
+                )
+                client_task = asyncio.create_task(server.serve_forever())
+                pending_tasks.add(client_task)
+                done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+
+                for pending_task in pending_tasks:
+                    pending_task.cancel()
+                try:
+                    await asyncio.gather(*pending_tasks)
+                except asyncio.CancelledError:
+                    pass
+
+                if monitor_task in done:
+                    await asyncio.sleep(0.5)
+                    logging.getLogger(__name__).info(
+                        "Restarting the wavemeter GUI for wavemeter %i.", wavemeter.product_id
+                    )
 
 
 async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[IPvAnyInterface] | None, int]]):
@@ -251,7 +280,9 @@ async def main(wavemeter_config: Iterable[tuple[int, IPvAnyInterface | Sequence[
         server_list.add(server)
         wavemeters_configured.add(wavemeter_id)
 
-    logging.getLogger(__name__).info("Wavemeter configurations found for %s...", wavemeters_configured)
+    logging.getLogger(__name__).info(
+        "Wavemeter configurations found for: %s.", ",".join(map(str, sorted(wavemeters_configured)))
+    )
     await asyncio.gather(*server_list)
 
 

@@ -314,6 +314,7 @@ class Wavemeter:
             The wavemeter product id/version/serial number.
         """
         # Set the timeout to -1 (infinity), because the timeout should be handled via asyncio
+        # FIXME: Allow a file name for the GUI application instead of the default (None).
         await self.__wrapper(wlmData.open_window, None, product_id, -1)
 
     @_lock_wavemeter
