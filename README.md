@@ -3,7 +3,23 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=flat&logo=docker&logoColor=white)
 # wmControl
-WM HighFinesse WS8 control via ethernet
+Wavemeter HighFinesse WS8 control via ethernet.
+
+Creates a host which serves for every connected wavemeter. It uses SCPI for communication with the wavemeters.
+```
+import asyncio
+
+
+request = "MEASURE:WAVELENGTH (@1,2)"  # SCPI-command
+reader, writer = await asyncio.open_connection(interface, port)  # Interface and port of wavemeter server.
+await writer.write(request.encode())
+await writer.drain()
+
+wave_1 = await reader.readline().decode().strip()
+print("Wavelength channel 1: ", wave_1)
+wave_2 = await reader.readline().decode().strip()
+print("Wavelength channel 2: ", wave_2)
+```
 
 # Installation instructions
 ## Linux
