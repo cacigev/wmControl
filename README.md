@@ -10,7 +10,7 @@ Creates a host which serves for every connected wavemeter. It uses SCPI for comm
 import asyncio
 
 
-request = "MEASURE:WAVELENGTH (@1,2)"  # SCPI-command
+request = "MEASURE:WAVELENGTH (@1,2)\n"  # SCPI-command
 reader, writer = await asyncio.open_connection(interface, port)  # Interface and port of wavemeter server.
 await writer.write(request.encode())
 await writer.drain()
