@@ -15,9 +15,9 @@ reader, writer = await asyncio.open_connection(interface, port)  # Interface and
 await writer.write(request.encode())
 await writer.drain()
 
-wave_1 = await reader.readline().decode().strip()
+wave_1 = await reader.readline().decode().rstrip()
 print("Wavelength channel 1: ", wave_1)
-wave_2 = await reader.readline().decode().strip()
+wave_2 = await reader.readline().decode().rstrip()
 print("Wavelength channel 2: ", wave_2)
 ```
 
