@@ -903,8 +903,8 @@ def set_channel(dll: ctypes.WinDLL | ctypes.CDLL, channel: int) -> None:
     _setter_error_handling(set_channel.__name__, result, channel)
 
 
-def get_channel(dll: ctypes.WinDLL | ctypes.CDLL) -> int:
-    return dll.GetSwitcherChannel(0) - 1
+def get_channel(dll: ctypes.WinDLL | ctypes.CDLL) -> [int]:
+    return [dll.GetSwitcherChannel(0) - 1]
 
 
 def get_channel_count(dll: ctypes.WinDLL | ctypes.CDLL) -> int:

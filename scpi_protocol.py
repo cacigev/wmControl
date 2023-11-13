@@ -192,7 +192,7 @@ def create_scpi_protocol(wavemeter: Wavemeter) -> Commands:
                 doc="frequency measurement query",
             ),
             "MEASure:TEMPerature": NumberCmdR(decode=lambda x: x, get=wavemeter.get_temperature),
-            "FETCh:CHannel": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel),
+            "ROUTe:CLOSe:STATe": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel),
             "FETCh:CHannel:COUNT": NumberCmdR(decode=lambda x: x, get=wavemeter.get_channel_count),
             "CALibration:WAVElength[:POSTcal]": NumberCmdR(
                 decode=lambda x: x, get=partial(wavemeter.get_calibration_wavelength, False)
